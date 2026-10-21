@@ -1,0 +1,14 @@
+.idea/
+.env
+.env.*
+!.env.example
+**/application-local.properties
+**/target/
+**/node_modules/
+**/dist/
+*.tsbuildinfo
+.tools/
+.local/
+storage/
+*.log
+!**/.mvn/wrapper/maven-wrapper.jar
