@@ -48,6 +48,8 @@ public class ProductMediaController {
                     throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Ảnh tối đa 24 megapixel.");
                 decoded=reader.read(0);
             } finally { reader.dispose(); }
+        } catch(javax.imageio.IIOException exception) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Không đọc được ảnh. Vui lòng chọn lại ảnh JPG hoặc PNG hợp lệ.");
         }
         UUID media=UUID.randomUUID(); Files.createDirectories(root);
         String name=media+".png"; Path destination=root.resolve(name);

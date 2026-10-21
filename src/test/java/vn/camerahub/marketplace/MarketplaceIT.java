@@ -113,4 +113,33 @@ class MarketplaceIT {
         jdbc.update("UPDATE camerahub.products SET listing_status='PUBLISHED' WHERE id=?",product);
         mvc.perform(get(url)).andExpect(status().isOk());
     }
+    @Test void brandOnlyListingUsesUnspecifiedModelAndPreservesExistingModels() throws Exception {
+        UUID seller=account(),oldProduct=product(seller,24500000);
+        jdbc.update("INSERT INTO camerahub.seller_verifications(seller_id,status) VALUES (?,'VERIFIED')",seller);
+        UUID brand=jdbc.queryForObject("SELECT m.brand_id FROM camerahub.products p JOIN camerahub.camera_models m ON m.id=p.model_id WHERE p.id=?",UUID.class,oldProduct);
+        UUID originalModel=jdbc.queryForObject("SELECT model_id FROM camerahub.products WHERE id=?",UUID.class,oldProduct);
+        var input=new MarketplaceController.Listing(null,"Canon do người bán đặt tiêu đề","12000000",null,"Description","Condition","Pin","PRIVATE",List.of("TRAVEL"),brand,"BODY");
+        for(int i=0;i<2;i++) {
+            String body=mvc.perform(post("/api/marketplace/listings").with(user(seller.toString())).with(csrf())
+                .contentType("application/json").content(json.writeValueAsString(input))).andExpect(status().isOk())
+                .andExpect(jsonPath("$.listingStatus").value("PENDING_REVIEW")).andReturn().getResponse().getContentAsString();
+            UUID id=UUID.fromString(json.readTree(body).get("id").asText());
+            assertThat(jdbc.queryForObject("SELECT m.model_name FROM camerahub.products p JOIN camerahub.camera_models m ON m.id=p.model_id WHERE p.id=?",String.class,id)).isEqualTo("Chưa khai báo model");
+        }
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM camerahub.camera_models WHERE brand_id=? AND model_name='Chưa khai báo model' AND device_type='BODY'",Integer.class,brand)).isEqualTo(1);
+        assertThat(jdbc.queryForObject("SELECT model_id FROM camerahub.products WHERE id=?",UUID.class,oldProduct)).isEqualTo(originalModel);
+        mvc.perform(get("/api/public/brands")).andExpect(status().isOk());
+        // The previous modelId request remains accepted.
+        var legacy=new MarketplaceController.Listing(originalModel,"Legacy listing","12000000",null,"Description","Condition","Pin","PRIVATE",List.of());
+        mvc.perform(post("/api/marketplace/listings").with(user(seller.toString())).with(csrf()).contentType("application/json")
+            .content(json.writeValueAsString(legacy))).andExpect(status().isOk());
+    }
+    @Test void brandListingRejectsMissingUnknownOrAmbiguousSelection() throws Exception {
+        UUID seller=account(); jdbc.update("INSERT INTO camerahub.seller_verifications(seller_id,status) VALUES (?,'VERIFIED')",seller);
+        String base="\"title\":\"Fixture\",\"priceVnd\":\"12000000\",\"description\":\"Description\",\"conditionNotes\":\"Condition\",\"purposes\":[]";
+        for(String selection:List.of("",",\"brandId\":\""+UUID.randomUUID()+"\"",",\"brandId\":\""+UUID.randomUUID()+"\",\"modelId\":\""+UUID.randomUUID()+"\"",",\"brandId\":\""+UUID.randomUUID()+"\",\"deviceType\":\"INVALID\"")) {
+            mvc.perform(post("/api/marketplace/listings").with(user(seller.toString())).with(csrf())
+                .contentType("application/json").content("{"+base+selection+"}")).andExpect(status().isBadRequest());
+        }
+    }
 }

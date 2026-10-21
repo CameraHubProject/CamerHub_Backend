@@ -61,6 +61,9 @@ public class MarketplaceService {
     public List<Map<String,Object>> models() {
         return jdbc.queryForList("SELECT m.id,b.name AS brand,m.model_name AS \"modelName\",m.device_type AS \"deviceType\" FROM camerahub.camera_models m JOIN camerahub.brands b ON b.id=m.brand_id ORDER BY b.name,m.model_name");
     }
+    public List<Map<String,Object>> brands() {
+        return jdbc.queryForList("SELECT id,name FROM camerahub.brands ORDER BY name");
+    }
     public List<Map<String,Object>> showrooms() {
         return jdbc.queryForList("SELECT id,name,address FROM camerahub.showrooms WHERE active ORDER BY name");
     }
@@ -82,17 +85,36 @@ public class MarketplaceService {
     @Transactional
     public Map<String,Object> listing(UUID user,MarketplaceController.Listing input) {
         requireSeller(user);
-        if(jdbc.queryForObject("SELECT count(*) FROM camerahub.camera_models WHERE id=?",Integer.class,input.modelId())!=1)
-            throw failure(HttpStatus.BAD_REQUEST,"Vui lòng chọn model có trong danh mục.");
+        UUID model=resolveListingModel(input);
         long price=money(input.priceVnd()); UUID id=UUID.randomUUID();
         jdbc.update("""
             INSERT INTO camerahub.products(id,seller_id,model_id,title,price_vnd,shutter_count,description,
               condition_notes,accessories,serial_number_private,listing_status,presentation)
             VALUES (?,?,?,?,?,?,?,?,?,?,'PENDING_REVIEW',?::jsonb)
-            """,id,user,input.modelId(),input.title().strip(),price,input.shutterCount(),input.description().strip(),
+            """,id,user,model,input.title().strip(),price,input.shutterCount(),input.description().strip(),
             input.conditionNotes().strip(),input.accessories(),input.serialNumber(),encode(Map.of("purposes",input.purposes())));
         jdbc.update("INSERT INTO camerahub.product_status_history(product_id,new_status,actor_id,reason) VALUES (?,'PENDING_REVIEW',?,'Người bán gửi tin')",id,user);
         return Map.of("id",id,"listingStatus","PENDING_REVIEW");
+    }
+    private UUID resolveListingModel(MarketplaceController.Listing input) {
+        if(!input.isSelectionValid()) throw failure(HttpStatus.BAD_REQUEST,"Vui lòng chọn một hãng máy hợp lệ.");
+        if(input.modelId()!=null) {
+            if(jdbc.queryForObject("SELECT count(*) FROM camerahub.camera_models WHERE id=?",Integer.class,input.modelId())!=1)
+                throw failure(HttpStatus.BAD_REQUEST,"Vui lòng chọn model có trong danh mục.");
+            return input.modelId();
+        }
+        if(jdbc.queryForObject("SELECT count(*) FROM camerahub.brands WHERE id=?",Integer.class,input.brandId())!=1)
+            throw failure(HttpStatus.BAD_REQUEST,"Hãng máy không có trong danh mục.");
+        String type=input.deviceType()==null?"BODY":input.deviceType();
+        // The existing schema requires model_id. Reuse one explicitly unspecified record per
+        // brand/type, rather than attributing the listing to an arbitrary real camera model.
+        // This is ordinary listing data, with no schema migration or modification of old models.
+        return jdbc.queryForObject("""
+            INSERT INTO camerahub.camera_models(brand_id,model_name,device_type)
+            VALUES (?,'Chưa khai báo model',?)
+            ON CONFLICT(brand_id,model_name,device_type) DO UPDATE SET model_name=EXCLUDED.model_name
+            RETURNING id
+            """,UUID.class,input.brandId(),type);
     }
     public void requireSeller(UUID user) {
         if(jdbc.queryForObject("SELECT count(*) FROM camerahub.seller_verifications WHERE seller_id=? AND status='VERIFIED'",Integer.class,user)==0)
