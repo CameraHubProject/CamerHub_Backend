@@ -11,6 +11,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.access.intercept.AuthorizationFilter;
 import vn.camerahub.identity.AccountService;
 import vn.camerahub.identity.ActiveAccountFilter;
+import vn.camerahub.identity.GoogleOidcUserService;
+import vn.camerahub.identity.GoogleLoginHandlers;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 
 @Configuration
 public class SecurityConfiguration {
@@ -18,13 +22,22 @@ public class SecurityConfiguration {
     PasswordEncoder passwordEncoder() { return new BCryptPasswordEncoder(12); }
 
     @Bean
-    SecurityFilterChain securityFilterChain(HttpSecurity http, AccountService accounts) throws Exception {
+    SecurityFilterChain securityFilterChain(HttpSecurity http, AccountService accounts,
+            ObjectProvider<ClientRegistrationRepository> googleClients, GoogleOidcUserService googleUsers, GoogleLoginHandlers googleHandlers) throws Exception {
+        if (googleClients.getIfAvailable() != null) {
+            http.oauth2Login(google -> google
+                    .authorizationEndpoint(endpoint -> endpoint.baseUri("/api/auth/oauth2"))
+                    .redirectionEndpoint(endpoint -> endpoint.baseUri("/api/auth/google/callback"))
+                    .userInfoEndpoint(info -> info.oidcUserService(googleUsers))
+                    .authorizedClientRepository(new vn.camerahub.identity.DiscardingGoogleClientRepository())
+                    .successHandler(googleHandlers).failureHandler(googleHandlers));
+        }
         return http
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
                 .requestCache(cache -> cache.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.GET, "/api/public/**", "/api/auth/csrf").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/auth/register", "/api/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/public/**", "/api/auth/csrf", "/api/auth/google/status", "/api/auth/oauth2/google", "/api/auth/google/callback").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/auth/register", "/api/auth/login", "/api/auth/google/link").permitAll()
                         .requestMatchers("/api/health", "/actuator/health", "/actuator/health/**",
                                 "/api/docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")

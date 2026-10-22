@@ -56,7 +56,7 @@ class DatabaseMigrationIT {
         assertThat(jdbc.queryForObject("""
                 SELECT count(*) FROM information_schema.tables
                 WHERE table_schema = 'camerahub' AND table_type = 'BASE TABLE'
-                """, Integer.class)).isEqualTo(46);
+                """, Integer.class)).isEqualTo(47);
         assertThat(jdbc.queryForList("SELECT code FROM camerahub.roles ORDER BY code", String.class))
                 .containsExactly("ADMIN", "BUYER", "INSPECTOR", "SELLER");
         assertThat(jdbc.queryForList("SELECT code FROM camerahub.inspection_check_definitions ORDER BY code", String.class))
