@@ -26,11 +26,16 @@ public class AccountService implements UserDetailsService {
     }
 
     @Override
-    public UserDetails loadUserByUsername(String email) {
-        var users = jdbc.query("SELECT id,password_hash,account_status FROM camerahub.users WHERE lower(email)=?",
+    public UserDetails loadUserByUsername(String identifier) {
+        if (identifier == null || identifier.length() > 254) throw new UsernameNotFoundException("Invalid account");
+        boolean byEmail = identifier.contains("@");
+        String key = byEmail ? normalizeEmail(identifier) : PhoneNumber.normalize(identifier);
+        if (key == null) throw new UsernameNotFoundException("Invalid account");
+        var users = jdbc.query("SELECT id,password_hash,account_status FROM camerahub.users WHERE "
+                + (byEmail ? "lower(email)=?" : "camerahub.normalized_login_phone(phone)=? AND camerahub.normalized_login_phone(phone) IS NOT NULL"),
                 (row, index) -> new Login(row.getObject("id", UUID.class), row.getString("password_hash"), row.getString("account_status")),
-                normalizeEmail(email));
-        if (users.isEmpty()) throw new UsernameNotFoundException("Invalid account");
+                key);
+        if (users.size() != 1) throw new UsernameNotFoundException("Invalid account");
         var user = users.getFirst();
         return User.withUsername(user.id().toString()).password(user.hash())
                 .disabled(!"ACTIVE".equals(user.status())).roles(roles(user.id()).toArray(String[]::new)).build();
@@ -41,9 +46,12 @@ public class AccountService implements UserDetailsService {
         if (password.getBytes(StandardCharsets.UTF_8).length > 72) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mật khẩu tối đa 72 byte UTF-8.");
         }
+        String canonicalPhone = PhoneNumber.normalize(phone);
+        if (phone != null && !phone.isBlank() && canonicalPhone == null)
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Số điện thoại di động Việt Nam chưa đúng. Ví dụ: 0912 345 678 hoặc +84 912 345 678.");
         UUID id = UUID.randomUUID();
         jdbc.update("INSERT INTO camerahub.users(id,email,password_hash,full_name,phone) VALUES (?,?,?,?,?)",
-                id, normalizeEmail(email), passwords.encode(password), fullName.strip(), phone == null ? null : phone.strip());
+                id, normalizeEmail(email), passwords.encode(password), fullName.strip(), canonicalPhone);
         jdbc.update("INSERT INTO camerahub.user_roles(user_id,role_code) VALUES (?,'BUYER')", id);
         audit(id, id, "ACCOUNT_REGISTERED");
         return get(id);

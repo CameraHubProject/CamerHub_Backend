@@ -48,7 +48,7 @@ public class SecurityConfiguration {
                         .failureHandler((request, response, exception) -> {
                             response.setStatus(401);
                             response.setContentType("application/json;charset=UTF-8");
-                            response.getWriter().write("{\"message\":\"Email, mật khẩu không đúng hoặc tài khoản không hoạt động.\"}");
+                            response.getWriter().write("{\"message\":\"Số điện thoại/email hoặc mật khẩu không đúng, hoặc tài khoản không hoạt động.\"}");
                         }))
                 .logout(logout -> logout.logoutUrl("/api/auth/logout").deleteCookies("JSESSIONID")
                         .logoutSuccessHandler((request, response, authentication) -> response.setStatus(204)))

@@ -19,12 +19,12 @@ public class IdentityErrors {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     ResponseEntity<?> validation() {
-        return ResponseEntity.badRequest().body(Map.of("message", "Kiểm tra email, họ tên, số điện thoại và mật khẩu (12–72 ký tự)."));
+        return ResponseEntity.badRequest().body(Map.of("message", "Nhập đầy đủ email, họ tên, số điện thoại hợp lệ và mật khẩu (12–72 ký tự)."));
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
     ResponseEntity<?> conflict() {
-        return ResponseEntity.status(409).body(Map.of("message", "Email hoặc hồ sơ đã tồn tại. Hãy tải lại và kiểm tra."));
+        return ResponseEntity.status(409).body(Map.of("message", "Email, số điện thoại hoặc hồ sơ đã tồn tại. Mỗi số điện thoại chỉ dùng cho một tài khoản."));
     }
 
     @ExceptionHandler(MaxUploadSizeExceededException.class)

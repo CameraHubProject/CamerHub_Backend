@@ -32,5 +32,5 @@ public class IdentityController {
     public record Csrf(String headerName, String token) {}
     public record Registration(@NotBlank @Email @Size(max=254) String email,
             @NotBlank @Size(min=12,max=72) String password, @NotBlank @Size(max=160) String fullName,
-            @Pattern(regexp="[+0-9 ()-]{0,20}") String phone) {}
+            @NotBlank @Pattern(regexp="[+0-9 ().-]{1,20}") String phone) {}
 }

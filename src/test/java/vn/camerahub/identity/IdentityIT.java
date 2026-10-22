@@ -52,7 +52,7 @@ class IdentityIT {
         mvc.perform(post("/api/auth/register").with(csrf()).contentType("application/json")
                 .content("{\"email\":\"bad\",\"password\":\"short\",\"fullName\":\"\"}"))
                 .andExpect(status().isBadRequest());
-        String payload = json.writeValueAsString(java.util.Map.of("email", UUID.randomUUID()+"@example.invalid", "password", "ắ".repeat(30), "fullName", "Test"));
+        String payload = json.writeValueAsString(java.util.Map.of("email", UUID.randomUUID()+"@example.invalid", "password", "ắ".repeat(30), "fullName", "Test", "phone", "0912345678"));
         mvc.perform(post("/api/auth/register").with(csrf()).contentType("application/json").content(payload))
                 .andExpect(status().isBadRequest());
     }
@@ -144,6 +144,47 @@ class IdentityIT {
                 .content(json.writeValueAsString(java.util.Map.of("decision",decision,"note","Integration decision")))).andExpect(status().is(expected));
     }
     private String registration(String email) throws Exception {
-        return json.writeValueAsString(java.util.Map.of("email",email,"password",PASSWORD,"fullName","Integration fixture","roles",java.util.List.of("ADMIN","SELLER")));
+        return json.writeValueAsString(java.util.Map.of("email",email,"password",PASSWORD,"fullName","Integration fixture","phone",phoneFor(email),"roles",java.util.List.of("ADMIN","SELLER")));
+    }
+    private String phoneFor(String email) { return String.format("09%08d", Integer.toUnsignedLong(email.toLowerCase(java.util.Locale.ROOT).hashCode()) % 100_000_000); }
+
+    @Test
+    void phoneSignInNormalizesFormatsAndUsesTheExistingSessionSecurity() throws Exception {
+        String email=UUID.randomUUID()+"@example.invalid"; String phone=phoneFor(email);
+        var user=accounts.register(email,PASSWORD,"Phone fixture",phone);
+        assertThat(user.phone()).isEqualTo("+84"+phone.substring(1));
+        for(String identifier:java.util.List.of(phone,"+84"+phone.substring(1),"84"+phone.substring(1),phone.substring(0,4)+" "+phone.substring(4),email)) {
+            var result=mvc.perform(post("/api/auth/login").with(csrf()).param("email",identifier).param("password",PASSWORD))
+                .andExpect(status().isNoContent()).andReturn();
+            mvc.perform(get("/api/auth/me").session((MockHttpSession)result.getRequest().getSession(false)))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.id").value(user.id().toString()));
+            assertThat(jdbc.queryForObject("SELECT camerahub.normalized_login_phone(?)",String.class,identifier))
+                .isEqualTo(identifier.contains("@") ? null : user.phone());
+        }
+        mvc.perform(post("/api/auth/login").with(csrf()).param("email",phone).param("password","wrong-password")).andExpect(status().isUnauthorized());
+        mvc.perform(post("/api/auth/login").param("email",phone).param("password",PASSWORD)).andExpect(status().isForbidden());
+        jdbc.update("UPDATE camerahub.users SET account_status='SUSPENDED' WHERE id=?",user.id());
+        mvc.perform(post("/api/auth/login").with(csrf()).param("email",phone).param("password",PASSWORD)).andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void duplicatePhoneCannotRegisterAnotherEmailEvenWithDifferentFormatting() throws Exception {
+        String first=UUID.randomUUID()+"@example.invalid"; String phone=phoneFor(first);
+        accounts.register(first,PASSWORD,"First phone fixture",phone);
+        String payload=json.writeValueAsString(java.util.Map.of("email",UUID.randomUUID()+"@example.invalid","password",PASSWORD,
+            "fullName","Duplicate phone fixture","phone","+84 "+phone.substring(1)));
+        mvc.perform(post("/api/auth/register").with(csrf()).contentType("application/json").content(payload))
+            .andExpect(status().isConflict()).andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("số điện thoại")));
+    }
+
+    @Test
+    void invalidOrMissingPhoneIsRejectedAndLegacyEmailAccountsStillWork() throws Exception {
+        for(String phone:java.util.List.of("", "0912", "+849123456789", "abc")) {
+            String payload=json.writeValueAsString(java.util.Map.of("email",UUID.randomUUID()+"@example.invalid","password",PASSWORD,"fullName","Invalid phone fixture","phone",phone));
+            mvc.perform(post("/api/auth/register").with(csrf()).contentType("application/json").content(payload)).andExpect(status().isBadRequest());
+        }
+        var legacy=fixture();
+        mvc.perform(get("/api/auth/me").session(login(legacy))).andExpect(status().isOk());
+        mvc.perform(post("/api/auth/login").with(csrf()).param("email","' OR 1=1 --").param("password",PASSWORD)).andExpect(status().isUnauthorized());
     }
 }
