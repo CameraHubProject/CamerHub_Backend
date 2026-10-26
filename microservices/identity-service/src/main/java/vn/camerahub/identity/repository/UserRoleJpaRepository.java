@@ -8,6 +8,6 @@ import java.time.*;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface UserRoleJpaRepository extends JpaRepository<UserRole, UserRoleId> {
-    @org.springframework.data.jpa.repository.Query("select case when r.roleCode='BUYER' then 'USER' else r.roleCode end from UserRole r where r.userId=:id and r.roleCode<>'SELLER' order by r.roleCode")
+    @org.springframework.data.jpa.repository.Query("select case when r.roleCode='BUYER' then 'USER' else r.roleCode end from UserRole r where r.userId=:id and r.roleCode in ('BUYER','ADMIN') order by r.roleCode")
     List<String> findActiveRoles(@org.springframework.data.repository.query.Param("id") UUID id);
 }

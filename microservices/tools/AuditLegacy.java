@@ -33,7 +33,8 @@ public class AuditLegacy {
         };
         String names = String.join(",", fields), where = String.join(" AND ", keys.stream().map(k -> k + "=?").toList());
         int count = 0, mismatch = 0;
-        try (var read = source.createStatement(); var rows = read.executeQuery("SELECT " + names + " FROM camerahub." + table); var lookup = target.prepareStatement("SELECT " + names + " FROM camerahub." + table + " WHERE " + where)) {
+        String supportedRoles = "user_roles".equals(table) ? " WHERE role_code IN ('BUYER','SELLER','ADMIN')" : "";
+        try (var read = source.createStatement(); var rows = read.executeQuery("SELECT " + names + " FROM camerahub." + table + supportedRoles); var lookup = target.prepareStatement("SELECT " + names + " FROM camerahub." + table + " WHERE " + where)) {
             while (rows.next()) {
                 count++;
                 for (int i = 0; i < keys.size(); i++) lookup.setObject(i + 1, rows.getObject(keys.get(i)));

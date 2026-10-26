@@ -181,7 +181,7 @@ Người mua và người bán cùng một user: cấm giao dịch.
 
 ### F05. Kiểm định tự nguyện
 
-Actor: Buyer hoặc Seller, Admin, Inspector
+Actor: Buyer hoặc Seller, Admin
 
 Tiền điều kiện: Sản phẩm xác định được; yêu cầu kiểm định hợp lệ
 
@@ -197,9 +197,9 @@ Hiển thị phạm vi, phí và quy tắc người trả mặc định là ngư
 
 Nếu muốn phân chia khác, Buyer và Seller trao đổi rồi cùng xác nhận fee agreement trên hệ thống.
 
-Ghi nhận phí mô phỏng, Admin phân công Inspector.
+Ghi nhận phí mô phỏng, Admin tiếp nhận và thực hiện kiểm định.
 
-Inspector xác nhận đúng máy/serial, kiểm tra checklist, bổ sung chứng cứ.
+Admin xác nhận đúng máy/serial, kiểm tra checklist, bổ sung chứng cứ.
 
 Phát hành Camera Health Report, đánh giá Certified theo tiêu chuẩn.
 
@@ -215,7 +215,7 @@ Không kiểm tra được: NOT_TESTED, không tự đánh PASS.
 
 ### F06. Kiểm định xác minh mô tả Seller
 
-Actor: Buyer, Seller, Inspector, Admin
+Actor: Buyer, Seller, Admin
 
 Tiền điều kiện: Buyer chỉ rõ các cam kết cần xác minh
 
@@ -231,9 +231,9 @@ Backend chụp snapshot các cam kết tại thời điểm yêu cầu.
 
 Buyer tạm ứng phí kiểm định (mô phỏng).
 
-Seller bàn giao đúng máy và Inspector kiểm tra từng cam kết.
+Seller bàn giao đúng máy và Admin kiểm tra từng cam kết.
 
-Inspector lập kết quả MATCH / MISREPRESENTED / INCONCLUSIVE có bằng chứng.
+Admin lập kết quả MATCH / MISREPRESENTED / INCONCLUSIVE có bằng chứng.
 
 Nếu đúng mô tả: Buyer chịu phí; nếu sai mô tả đủ điều kiện: Seller chịu phí cuối cùng và xử lý hoàn khoản ứng Buyer.
 
@@ -411,7 +411,7 @@ Refund lỗi: chưa đánh dấu hoàn tất.
 
 ### F12. Khiếu nại và tranh chấp
 
-Actor: Buyer, Seller, Admin, Inspector
+Actor: Buyer, Seller, Admin
 
 Tiền điều kiện: Đơn thuộc Buyer; vấn đề nằm trong phạm vi được tiếp nhận
 
@@ -429,7 +429,7 @@ Seller nhận yêu cầu và phản hồi bằng chứng.
 
 Admin đối chiếu tin gốc, báo cáo kiểm định, vận chuyển, thanh toán.
 
-Có thể yêu cầu Inspector làm rõ kỹ thuật.
+Admin làm rõ kỹ thuật dựa trên bằng chứng và báo cáo kiểm định.
 
 Admin quyết định: chấp nhận giao dịch, hỗ trợ, trả hàng/hoàn tiền hoặc yêu cầu bổ sung.
 

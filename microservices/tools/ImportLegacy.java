@@ -35,7 +35,8 @@ public class ImportLegacy {
         String names = String.join(",", fields);
         String placeholders = String.join(",", Collections.nCopies(fields.size(), "?"));
         int count = 0;
-        try (var select = source.prepareStatement("SELECT " + names + " FROM camerahub." + table); var insert = destination.prepareStatement("INSERT INTO camerahub." + table + "(" + names + ") VALUES (" + placeholders + ") ON CONFLICT DO NOTHING")) {
+        String supportedRoles = "user_roles".equals(table) ? " WHERE role_code IN ('BUYER','SELLER','ADMIN')" : "";
+        try (var select = source.prepareStatement("SELECT " + names + " FROM camerahub." + table + supportedRoles); var insert = destination.prepareStatement("INSERT INTO camerahub." + table + "(" + names + ") VALUES (" + placeholders + ") ON CONFLICT DO NOTHING")) {
             select.setFetchSize(200);
             try (var rows = select.executeQuery()) {
                 while (rows.next()) {
@@ -67,6 +68,10 @@ public class ImportLegacy {
             try {
                 for (String table : List.of("users", "user_roles", "user_addresses", "auth_identities", "audit_logs"))
                     copy(source, identity, table);
+                // Historical inspector accounts remain ordinary users; never import a retired permission.
+                queryCopy(source, identity,
+                        "SELECT DISTINCT user_id,'BUYER' FROM camerahub.user_roles WHERE role_code='INSPECTOR'",
+                        "INSERT INTO camerahub.user_roles(user_id,role_code) VALUES (?,?) ON CONFLICT DO NOTHING");
                 queryCopy(source, market, "SELECT id,full_name,account_status,created_at FROM camerahub.users", "INSERT INTO camerahub.public_accounts(id,full_name,account_status,created_at) VALUES (?,?,?,?) ON CONFLICT DO NOTHING");
                 for (String table : List.of("brands", "camera_models", "products", "product_media", "product_status_history"))
                     copy(source, market, table);
