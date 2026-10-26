@@ -12,7 +12,7 @@ if (Test-Path -LiteralPath $taskEnvPath) {
         $taskValue = $Matches[2]
         if ($taskValue.Length -ge 2 -and
             (($taskValue.StartsWith('"') -and $taskValue.EndsWith('"')) -or
-             ($taskValue.StartsWith("'") -and $taskValue.EndsWith("'")))) {
+            ($taskValue.StartsWith("'") -and $taskValue.EndsWith("'")))) {
             $taskValue = $taskValue.Substring(1, $taskValue.Length - 2)
         }
         if ($taskValue) { [Environment]::SetEnvironmentVariable($taskKey, $taskValue, 'Process') }

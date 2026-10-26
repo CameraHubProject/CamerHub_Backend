@@ -1,5 +1,7 @@
 # Đăng nhập và đăng ký Google
 
+> Tài liệu tham khảo bản monolith trước khi tách. Mã nguồn và công cụ cũ đã được nén vào `.local/backups/legacy-before-cleanup-20261026.zip`. Lệnh chạy và kết quả kiểm thử hiện tại: [microservices](../microservices/README.md). Xác minh người bán đã được bỏ khỏi ứng dụng hiện tại.
+
 ## Cấu hình phiên local
 
 Backend đọc cấu hình Google từ `.env` bị Git bỏ qua. Client secret không nằm trong source, response API hoặc frontend bundle. Chỉ yêu cầu `openid email profile`, không xin quyền đọc/gửi Gmail.

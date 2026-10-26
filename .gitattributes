@@ -1,7 +1,7 @@
 * text=auto
 *.cmd text eol=crlf
 *.ps1 text eol=crlf
+*.sh text eol=lf
 mvnw text eol=lf
-# Preserve the authoritative script and its migration copy byte for byte.
+# Preserve the authoritative schema reference byte for byte.
 db/001_full_schema.sql -text
-src/main/resources/db/migration/V1__full_schema.sql -text
