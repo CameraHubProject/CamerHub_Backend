@@ -8,9 +8,10 @@ RUN --mount=type=cache,target=/root/.m2 \
 FROM eclipse-temurin:21-jre-alpine
 RUN apk add --no-cache su-exec && addgroup -g 10001 app && adduser -D -u 10001 -G app app
 WORKDIR /app
-ARG SERVICE
-COPY --from=build /build/microservices/${SERVICE}/target/${SERVICE}-0.1.0-SNAPSHOT.jar /app/app.jar
+ARG SERVICE=api-gateway
+# Normalize both an omitted argument and an explicitly empty Render variable.
+ENV CAMERAHUB_SERVICE=${SERVICE:-api-gateway}
+COPY --from=build /build/microservices/${CAMERAHUB_SERVICE}/target/${CAMERAHUB_SERVICE}-0.1.0-SNAPSHOT.jar /app/app.jar
 COPY deploy/render/entrypoint.sh /app/entrypoint.sh
 RUN chmod 755 /app/entrypoint.sh
-ENV CAMERAHUB_SERVICE=${SERVICE}
 ENTRYPOINT ["/app/entrypoint.sh"]
