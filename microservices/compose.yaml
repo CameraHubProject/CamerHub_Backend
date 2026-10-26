@@ -1,0 +1,209 @@
+name: camerahub-platform
+services:
+  identity-db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: camerahub_identity
+      POSTGRES_USER: camerahub_identity
+      POSTGRES_PASSWORD: ${IDENTITY_DB_PASSWORD:?Use scripts/Invoke-Microservices.ps1}
+    ports: [ "127.0.0.1:15431:5432" ]
+    volumes: [ "identity-data:/var/lib/postgresql/data" ]
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U camerahub_identity -d camerahub_identity" ]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+  identity:
+    build:
+      context: .
+      args: { SERVICE: identity-service }
+    mem_limit: 512m
+    environment:
+      SERVICE_BIND_ADDRESS: 0.0.0.0
+      JWT_PUBLIC_KEY_PATH: /keys/public.pem
+      JWT_PRIVATE_KEY_PATH: /keys/private.pem
+      SERVICE_INTERNAL_KEY: ${SERVICE_INTERNAL_KEY}
+      IDENTITY_SERVICE_DB_URL: jdbc:postgresql://identity-db:5432/camerahub_identity
+      IDENTITY_SERVICE_DB_USER: camerahub_identity
+      IDENTITY_SERVICE_DB_PASSWORD: ${IDENTITY_DB_PASSWORD}
+      IDENTITY_URL: http://identity:8081
+      MARKETPLACE_URL: http://marketplace:8082
+      MODERATION_URL: http://moderation:8083
+      COMMERCE_URL: http://commerce:8084
+      ADVISOR_URL: http://advisor:8085
+      GOOGLE_LOGIN_ENABLED: ${GOOGLE_LOGIN_ENABLED:-false}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+    volumes:
+      - ../.local/jwt/public.pem:/keys/public.pem:ro
+      - ../.local/jwt/private.pem:/keys/private.pem:ro
+    ports: [ "127.0.0.1:8081:8081" ]
+    depends_on:
+      identity-db: { condition: service_healthy }
+  marketplace-db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: camerahub_marketplace
+      POSTGRES_USER: camerahub_marketplace
+      POSTGRES_PASSWORD: ${MARKETPLACE_DB_PASSWORD:?Use scripts/Invoke-Microservices.ps1}
+    ports: [ "127.0.0.1:15432:5432" ]
+    volumes: [ "marketplace-data:/var/lib/postgresql/data" ]
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U camerahub_marketplace -d camerahub_marketplace" ]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+  marketplace:
+    build:
+      context: .
+      args: { SERVICE: marketplace-service }
+    mem_limit: 512m
+    environment:
+      SERVICE_BIND_ADDRESS: 0.0.0.0
+      JWT_PUBLIC_KEY_PATH: /keys/public.pem
+      SERVICE_INTERNAL_KEY: ${SERVICE_INTERNAL_KEY}
+      MARKETPLACE_SERVICE_DB_URL: jdbc:postgresql://marketplace-db:5432/camerahub_marketplace
+      MARKETPLACE_SERVICE_DB_USER: camerahub_marketplace
+      MARKETPLACE_SERVICE_DB_PASSWORD: ${MARKETPLACE_DB_PASSWORD}
+      IDENTITY_URL: http://identity:8081
+      MARKETPLACE_URL: http://marketplace:8082
+      MODERATION_URL: http://moderation:8083
+      COMMERCE_URL: http://commerce:8084
+      ADVISOR_URL: http://advisor:8085
+      CAMERAHUB_MEDIA_ROOT: /media
+    volumes:
+      - ../storage/product-media:/media
+      - ../.local/jwt/public.pem:/keys/public.pem:ro
+    ports: [ "127.0.0.1:8082:8082" ]
+    depends_on:
+      marketplace-db: { condition: service_healthy }
+  moderation-db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: camerahub_moderation
+      POSTGRES_USER: camerahub_moderation
+      POSTGRES_PASSWORD: ${MODERATION_DB_PASSWORD:?Use scripts/Invoke-Microservices.ps1}
+    ports: [ "127.0.0.1:15433:5432" ]
+    volumes: [ "moderation-data:/var/lib/postgresql/data" ]
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U camerahub_moderation -d camerahub_moderation" ]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+  moderation:
+    build:
+      context: .
+      args: { SERVICE: moderation-service }
+    mem_limit: 512m
+    environment:
+      SERVICE_BIND_ADDRESS: 0.0.0.0
+      JWT_PUBLIC_KEY_PATH: /keys/public.pem
+      SERVICE_INTERNAL_KEY: ${SERVICE_INTERNAL_KEY}
+      MODERATION_SERVICE_DB_URL: jdbc:postgresql://moderation-db:5432/camerahub_moderation
+      MODERATION_SERVICE_DB_USER: camerahub_moderation
+      MODERATION_SERVICE_DB_PASSWORD: ${MODERATION_DB_PASSWORD}
+      IDENTITY_URL: http://identity:8081
+      MARKETPLACE_URL: http://marketplace:8082
+      MODERATION_URL: http://moderation:8083
+      COMMERCE_URL: http://commerce:8084
+      ADVISOR_URL: http://advisor:8085
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-5.4-mini}
+      AI_ENABLED: ${AI_ENABLED:-true}
+    volumes:
+      - ../.local/jwt/public.pem:/keys/public.pem:ro
+    ports: [ "127.0.0.1:8083:8083" ]
+    depends_on:
+      moderation-db: { condition: service_healthy }
+  commerce-db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: camerahub_commerce
+      POSTGRES_USER: camerahub_commerce
+      POSTGRES_PASSWORD: ${COMMERCE_DB_PASSWORD:?Use scripts/Invoke-Microservices.ps1}
+    ports: [ "127.0.0.1:15434:5432" ]
+    volumes: [ "commerce-data:/var/lib/postgresql/data" ]
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U camerahub_commerce -d camerahub_commerce" ]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+  commerce:
+    build:
+      context: .
+      args: { SERVICE: commerce-service }
+    mem_limit: 512m
+    environment:
+      SERVICE_BIND_ADDRESS: 0.0.0.0
+      JWT_PUBLIC_KEY_PATH: /keys/public.pem
+      SERVICE_INTERNAL_KEY: ${SERVICE_INTERNAL_KEY}
+      COMMERCE_SERVICE_DB_URL: jdbc:postgresql://commerce-db:5432/camerahub_commerce
+      COMMERCE_SERVICE_DB_USER: camerahub_commerce
+      COMMERCE_SERVICE_DB_PASSWORD: ${COMMERCE_DB_PASSWORD}
+      IDENTITY_URL: http://identity:8081
+      MARKETPLACE_URL: http://marketplace:8082
+      MODERATION_URL: http://moderation:8083
+      COMMERCE_URL: http://commerce:8084
+      ADVISOR_URL: http://advisor:8085
+    volumes:
+      - ../.local/jwt/public.pem:/keys/public.pem:ro
+    ports: [ "127.0.0.1:8084:8084" ]
+    depends_on:
+      commerce-db: { condition: service_healthy }
+  advisor-db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: camerahub_advisor
+      POSTGRES_USER: camerahub_advisor
+      POSTGRES_PASSWORD: ${ADVISOR_DB_PASSWORD:?Use scripts/Invoke-Microservices.ps1}
+    ports: [ "127.0.0.1:15435:5432" ]
+    volumes: [ "advisor-data:/var/lib/postgresql/data" ]
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U camerahub_advisor -d camerahub_advisor" ]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+  advisor:
+    build:
+      context: .
+      args: { SERVICE: ai-advisor-service }
+    mem_limit: 512m
+    environment:
+      SERVICE_BIND_ADDRESS: 0.0.0.0
+      JWT_PUBLIC_KEY_PATH: /keys/public.pem
+      SERVICE_INTERNAL_KEY: ${SERVICE_INTERNAL_KEY}
+      AI_ADVISOR_SERVICE_DB_URL: jdbc:postgresql://advisor-db:5432/camerahub_advisor
+      AI_ADVISOR_SERVICE_DB_USER: camerahub_advisor
+      AI_ADVISOR_SERVICE_DB_PASSWORD: ${ADVISOR_DB_PASSWORD}
+      IDENTITY_URL: http://identity:8081
+      MARKETPLACE_URL: http://marketplace:8082
+      MODERATION_URL: http://moderation:8083
+      COMMERCE_URL: http://commerce:8084
+      ADVISOR_URL: http://advisor:8085
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-5.4-mini}
+      AI_ENABLED: ${AI_ENABLED:-true}
+    volumes:
+      - ../.local/jwt/public.pem:/keys/public.pem:ro
+    ports: [ "127.0.0.1:8085:8085" ]
+    depends_on:
+      advisor-db: { condition: service_healthy }
+  gateway:
+    build:
+      context: .
+      args: { SERVICE: api-gateway }
+    mem_limit: 256m
+    environment:
+      SERVICE_BIND_ADDRESS: 0.0.0.0
+      IDENTITY_URL: http://identity:8081
+      MARKETPLACE_URL: http://marketplace:8082
+      MODERATION_URL: http://moderation:8083
+      COMMERCE_URL: http://commerce:8084
+      ADVISOR_URL: http://advisor:8085
+    ports: [ "127.0.0.1:${GATEWAY_PORT:-8086}:8080" ]
+volumes:
+  identity-data:
+  marketplace-data:
+  moderation-data:
+  commerce-data:
+  advisor-data:

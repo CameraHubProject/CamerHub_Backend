@@ -1,0 +1,3 @@
+name: camerahub-platform
+include:
+  - path: ./microservices/compose.yaml

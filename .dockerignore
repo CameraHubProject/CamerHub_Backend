@@ -1,0 +1,15 @@
+**/.git
+.local
+.tools
+.idea
+.env
+.env.*
+**/target
+**/node_modules
+**/dist
+storage
+docs
+design
+**/*.pem
+**/*.key
+**/*.log
