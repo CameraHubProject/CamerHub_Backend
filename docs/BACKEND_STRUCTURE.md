@@ -102,6 +102,21 @@ Chi tiết mã lỗi, exception theo nghiệp vụ và trách nhiệm FE/BE:
 
 ## Xác thực
 
+API trả hai quyền `USER` và `ADMIN`. Role kiểm định riêng đã bị loại bỏ; các thao tác
+quản trị dùng `ADMIN`. Identity chỉ nạp các quyền đang được hỗ trợ từ database nên
+role cũ không được đưa vào hồ sơ, JWT mới hoặc xác thực lại token hiện có.
+Migration Identity V3 thu hồi role cũ, giữ tài khoản và lịch sử, cấp quyền người dùng
+thông thường nếu cần và chặn việc tạo lại role đó. Các migration V1/V2 giữ nguyên
+để không làm thay đổi checksum trên database đã chạy.
+
+Với database Neon cũ không chạy bộ migration của Identity, bản SQL tương ứng nằm ở
+`db/002_remove_inspector_role.sql`; chạy trong một transaction. Công cụ
+`scripts/Remove-InspectorRole.java` hỗ trợ `test`, `check`, `apply` với đích `neon`
+hoặc `local`, đọc secret từ file môi trường và sao lưu quyền bị ảnh hưởng trong
+`.local/role-removal/` trước khi áp dụng. Chế độ test tạo schema riêng rồi rollback
+toàn bộ; không ghi fixture vào các bảng nghiệp vụ. Công cụ import dữ liệu cũ bỏ
+qua quyền đã thu hồi và giữ tài khoản cũ dưới quyền người dùng thông thường.
+
 `POST /api/auth/login` nhận form email (hoặc số điện thoại) và password, trả JWT cùng
 cookie HttpOnly. Access token hết hạn sau 15 phút. `POST /api/auth/refresh` đổi refresh
 token để cấp JWT mới; `POST /api/auth/logout` thu hồi phiên. Client trình duyệt phải

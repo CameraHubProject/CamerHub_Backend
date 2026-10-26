@@ -16,7 +16,7 @@ Mật khẩu ban đầu dùng chung: `CameraHubDemo!2026`.
 | seller2@demo.camerahub.test | Người bán 02, đã xác minh mô phỏng, đồng thời có quyền người mua |
 | pending@demo.camerahub.test | Hồ sơ đang chờ Admin duyệt |
 | revision@demo.camerahub.test | Hồ sơ cần bổ sung, có thể gửi lại file |
-| inspector@demo.camerahub.test | Kiểm định viên, đồng thời có quyền người mua; chưa có giao diện nghiệp vụ kiểm định |
+| inspector@demo.camerahub.test | Tài khoản cũ được giữ lại với quyền người dùng thông thường; role kiểm định đã bỏ |
 
 Đăng nhập tại `http://127.0.0.1:5173/dang-nhap`. Xem tài khoản tại `/tai-khoan`; Admin xét duyệt tại `/quan-tri/xac-minh`.
 
