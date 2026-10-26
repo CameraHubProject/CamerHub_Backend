@@ -22,6 +22,13 @@ Người dùng → HTTPS camerahub-web.onrender.com (React + Nginx)
 
 Dockerfile build từ source bằng Java 21/Maven và Node 22, không phụ thuộc `target`/`dist` trên máy. Backend chạy bằng UID 10001. JWT private key chỉ được cấp cho Identity; public key được chia sẻ cho các service xác minh token. Cookie production bật `Secure` và `HttpOnly`.
 
+Nếu tạo service thủ công, đặt Dockerfile Path là `deploy/render/Dockerfile`, build context
+là `.` và để trống Root Directory. Biến `SERVICE` chọn module Java: `api-gateway`,
+`identity-service`, `marketplace-service`, `moderation-service`, `commerce-service`,
+`ai-advisor-service`. Khi bỏ trống hoặc thiếu `SERVICE`, Dockerfile mặc định chọn
+`api-gateway`; các service khác cần chỉ định module tương ứng. Gateway vẫn cần các
+service nghiệp vụ và biến môi trường để ứng dụng hoạt động đầy đủ.
+
 ## Dự toán trước khi tạo tài nguyên
 
 | Tài nguyên | Số lượng | Giá dự kiến USD/tháng |
