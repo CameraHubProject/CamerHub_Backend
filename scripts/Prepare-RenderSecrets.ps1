@@ -2,6 +2,7 @@ param()
 $ErrorActionPreference = 'Stop'
 $platformRoot = Split-Path -Parent $PSScriptRoot
 $keyDirectory = Join-Path $platformRoot '.local/render/keys'
+& (Join-Path $PSScriptRoot 'Prepare-InternalKey.ps1')
 $javaCommand = Get-Command java -ErrorAction SilentlyContinue
 if ($javaCommand) { $javaExecutable = $javaCommand.Source }
 elseif ($env:JAVA_HOME) { $javaExecutable = Join-Path $env:JAVA_HOME 'bin/java.exe' }

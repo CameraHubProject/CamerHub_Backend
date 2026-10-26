@@ -56,6 +56,15 @@ Java 21 cần có trong PATH hoặc `JAVA_HOME`. Script tạo cặp RSA mới ri
 - `JWT_PUBLIC_KEY_B64.txt`: điền `JWT_PUBLIC_KEY_B64` của Identity.
 - `JWT_PRIVATE_KEY_B64.txt`: điền `JWT_PRIVATE_KEY_B64` của Identity.
 - `identity-jwt.env`: hai biến trên, thuận tiện nhập vào Render nếu cần.
+- `SERVICE_INTERNAL_KEY.txt`: khóa chung cho các backend khi triển khai thủ công.
+- `shared-internal.env`: chỉ chứa khóa nội bộ để nhập vào nhóm biến môi trường dùng chung; không chứa JWT private key.
+
+Với service tạo thủ công, đặt `SERVICE_INTERNAL_KEY` bằng nội dung file tương ứng
+cho Gateway và cả 5 backend nghiệp vụ. Nếu đã có khóa chung đang dùng trên Render,
+tiếp tục dùng chính giá trị đó cho các service. Có thể chỉ tạo khóa nội bộ bằng
+`powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\Prepare-InternalKey.ps1`;
+script không cần Java và giữ nguyên khóa đã tạo khi chạy lại. Không cấp khóa nội bộ
+cho frontend hoặc đưa khóa vào biến có tiền tố `VITE_`.
 
 Không đưa các giá trị này vào chat, repository hoặc frontend. Cất giữ private key an toàn; thay khóa sẽ làm token cũ mất hiệu lực.
 
