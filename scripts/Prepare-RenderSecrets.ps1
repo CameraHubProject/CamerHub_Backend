@@ -17,4 +17,4 @@ $lines = foreach ($entry in @(@('JWT_PUBLIC_KEY_B64', 'public.pem'), @('JWT_PRIV
 }
 [IO.File]::WriteAllLines((Join-Path $keyDirectory 'identity-jwt.env'), $lines)
 Write-Host 'Render JWT values are ready in .local/render/keys (git-ignored).'
-Write-Host 'Enter these values only in the Render identity service environment settings.'
+Write-Host 'Enter these values only in the unified backend environment on Render.'

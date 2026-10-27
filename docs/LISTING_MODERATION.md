@@ -49,4 +49,4 @@ API sử dụng ảnh dạng data URL và đầu ra JSON Schema theo
 [Structured Outputs](https://developers.openai.com/api/docs/guides/structured-outputs).
 Chỉ gửi nội dung tin và ảnh, không gửi số điện thoại/email, số sê-ri hay hồ sơ xác minh.
 
-Chạy `./mvnw.cmd --batch-mode --no-transfer-progress verify`; bộ kiểm tra API và tình huống dừng/khởi động Moderation nằm trong `scripts/Test-Microservices.ps1`. Cách cấu hình môi trường thử và khôi phục AI: [hướng dẫn microservices](../microservices/README.md). Frontend: `npm run build`, `npm test`.
+Chạy `./mvnw.cmd --batch-mode --no-transfer-progress verify`; kiểm tra API trên bản sao Neon bằng `scripts/Test-UnifiedBackend.ps1`. Backend hiện chạy chung một JVM; xem [hướng dẫn hiện tại](../README.md) và [kết quả kiểm thử](UNIFIED_BACKEND_VERIFICATION.md).

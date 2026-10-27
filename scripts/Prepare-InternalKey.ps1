@@ -19,4 +19,4 @@ else {
 }
 [IO.File]::WriteAllText((Join-Path $internalDirectory 'shared-internal.env'), ('SERVICE_INTERNAL_KEY=' + $internalValue + [Environment]::NewLine))
 Write-Host 'Shared backend key ready in .local/render/keys/SERVICE_INTERNAL_KEY.txt (git-ignored).'
-Write-Host 'Use the same value for SERVICE_INTERNAL_KEY in all backend services. Keep it out of the frontend.'
+Write-Host 'Keep this stable for listing serial fingerprints. Keep it out of the frontend.'

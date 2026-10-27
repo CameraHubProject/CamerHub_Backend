@@ -5,7 +5,7 @@ import java.util.*;
 
 /** Explicit, transactional role cleanup for the legacy Neon DB and local Identity DB. */
 class RemoveInspectorRole {
-    private static final Path MIGRATION = Path.of("microservices/identity-service/src/main/resources/db/migration/V3__remove_inspector_role.sql");
+    private static final Path MIGRATION = Path.of("src/main/resources/db/unified/V3__remove_inspector_role.sql");
 
     public static void main(String[] args) throws Exception {
         if (args.length != 2 || !Set.of("check", "test", "apply").contains(args[0]) || !Set.of("local", "neon").contains(args[1]))

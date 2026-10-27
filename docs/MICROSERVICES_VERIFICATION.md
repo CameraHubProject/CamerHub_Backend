@@ -1,3 +1,5 @@
+> Tài liệu lịch sử của bản microservice. Backend hiện tại chạy chung một Spring Boot application và một Neon database; xem [hướng dẫn hiện tại](DEPLOY_RENDER.md).
+
 # Microservice conversion verification
 
 Date: 26 October 2026 (Asia/Bangkok).
@@ -45,7 +47,7 @@ disaster recovery or complete image-manipulation coverage. No claim is made that
 similarity catches every edit. HTTP event transport, JPA repositories and Identity JWT
 issuance/revocation are implemented. RabbitMQ, Redis and a full OIDC server are not deployed.
 
-Reproduce using the commands in [microservices/README.md](../microservices/README.md).
+Reproduce using the commands in [microservices/README.md](../README.md).
 Temporary logs, generated migration scripts and smoke result files were removed during
 project cleanup. The obsolete monolith source was archived with verified SHA-256 hashes
 in `.local/backups/legacy-before-cleanup-20261026.zip`; active runtime configuration,

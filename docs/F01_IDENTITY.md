@@ -1,6 +1,6 @@
 # F01 Registration login and seller verification
 
-> Tài liệu tham khảo bản monolith trước khi tách. Mã nguồn và công cụ cũ đã được nén vào `.local/backups/legacy-before-cleanup-20261026.zip`. Lệnh chạy và kết quả kiểm thử hiện tại: [microservices](../microservices/README.md). Xác minh người bán đã được bỏ khỏi ứng dụng hiện tại.
+> Tài liệu tham khảo bản monolith trước khi tách. Mã nguồn và công cụ cũ đã được nén vào `.local/backups/legacy-before-cleanup-20261026.zip`. Lệnh chạy và kết quả kiểm thử hiện tại: [microservices](../README.md). Xác minh người bán đã được bỏ khỏi ứng dụng hiện tại.
 
 Implemented against `CameraHub_12_Business_Flows_v3_2.md`, transcribed from the supplied Word source retained next to it. All 12 flow definitions are available; F01 is the current implementation stage. The original schema and V1 migration remain unchanged.
 

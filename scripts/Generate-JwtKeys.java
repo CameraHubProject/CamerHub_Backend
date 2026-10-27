@@ -5,7 +5,7 @@ import java.security.spec.*;
 import java.util.Base64;
 
 /**
- * Generates local RSA keys once. Private key is mounted by Identity only.
+ * Generates a stable RSA key pair once for the unified backend.
  */
 public class GenerateJwtKeys {
     public static void main(String[] args) throws Exception {
