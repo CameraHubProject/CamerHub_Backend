@@ -1,7 +1,9 @@
+> Tài liệu lịch sử của bản microservice. Backend hiện tại chạy chung một Spring Boot application và một Neon database; xem [hướng dẫn hiện tại](DEPLOY_RENDER.md).
+
 # CameraHub — Bản thiết kế cấu trúc microservice
 
 Thiết kế ban đầu: 25/10/2026. Đã triển khai mã nguồn ngày 26/10/2026: xem
-[cấu trúc lớp và hướng dẫn chạy](../microservices/README.md). Bản chạy hiện tại dùng
+[cấu trúc lớp và hướng dẫn chạy](../README.md). Bản chạy hiện tại dùng
 Spring Data JPA/Hibernate, Lombok, MapStruct, JWT RSA và HTTP outbox/inbox.
 RabbitMQ, Redis và OIDC authorization server đầy đủ bên dưới là phương án mở rộng.
 
@@ -428,7 +430,7 @@ luồng AI/checkout, bảo mật, tiêu chí kiểm thử và lộ trình chuy�
 Mã nguồn đã được chuyển thành sáu ứng dụng Spring Boot độc lập; xem trạng thái bên dưới.
 # Implementation status
 
-The executable implementation is documented in [microservices/README.md](../microservices/README.md).
+The executable implementation is documented in [microservices/README.md](../README.md).
 It uses six independent applications and five PostgreSQL databases. Initial event delivery
 uses durable HTTP outbox/inbox. Business persistence uses JPA/Hibernate and Spring Data
 repositories with native PostgreSQL fragments where atomic operations are needed.

@@ -1,3 +1,13 @@
-name: camerahub-platform
-include:
-  - path: ./microservices/compose.yaml
+name: camerahub
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: deploy/render/Dockerfile
+    env_file:
+      - .local/render/unified-backend.env
+    environment:
+      PORT: '10000'
+      SESSION_COOKIE_SECURE: 'false'
+    ports:
+      - '8080:10000'

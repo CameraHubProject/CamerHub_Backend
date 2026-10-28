@@ -1,4 +1,4 @@
-param([string]$BaseUrl='http://127.0.0.1:8080')
+param([string]$BaseUrl='http://127.0.0.1:18080')
 $ErrorActionPreference='Stop'
 $authChecks=0
 function Assert-Auth($Condition,[string]$Message){if(-not $Condition){throw $Message};$script:authChecks++;Write-Output "PASS $Message"}

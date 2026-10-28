@@ -1,6 +1,6 @@
 # Dữ liệu demo CameraHub
 
-> Tài liệu tham khảo bản monolith trước khi tách. Mã nguồn và công cụ cũ đã được nén vào `.local/backups/legacy-before-cleanup-20261026.zip`. Lệnh chạy và kết quả kiểm thử hiện tại: [microservices](../microservices/README.md). Xác minh người bán đã được bỏ khỏi ứng dụng hiện tại.
+> Tài liệu tham khảo bản monolith trước khi tách. Mã nguồn và công cụ cũ đã được nén vào `.local/backups/legacy-before-cleanup-20261026.zip`. Lệnh chạy và kết quả kiểm thử hiện tại: [microservices](../README.md). Xác minh người bán đã được bỏ khỏi ứng dụng hiện tại.
 
 Bộ dữ liệu dành riêng cho database `camerahub_mvp_dev`. Tất cả tài khoản, hồ sơ, giá, số lần chụp và tình trạng thiết bị bên dưới đều giả lập. Không dùng tài liệu xác minh danh tính thật.
 
