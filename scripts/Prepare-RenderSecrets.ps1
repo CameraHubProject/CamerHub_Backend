@@ -2,6 +2,7 @@ param()
 $ErrorActionPreference = 'Stop'
 $platformRoot = Split-Path -Parent $PSScriptRoot
 $keyDirectory = Join-Path $platformRoot '.local/render/keys'
+& (Join-Path $PSScriptRoot 'Prepare-InternalKey.ps1')
 $javaCommand = Get-Command java -ErrorAction SilentlyContinue
 if ($javaCommand) { $javaExecutable = $javaCommand.Source }
 elseif ($env:JAVA_HOME) { $javaExecutable = Join-Path $env:JAVA_HOME 'bin/java.exe' }
@@ -16,4 +17,4 @@ $lines = foreach ($entry in @(@('JWT_PUBLIC_KEY_B64', 'public.pem'), @('JWT_PRIV
 }
 [IO.File]::WriteAllLines((Join-Path $keyDirectory 'identity-jwt.env'), $lines)
 Write-Host 'Render JWT values are ready in .local/render/keys (git-ignored).'
-Write-Host 'Enter these values only in the Render identity service environment settings.'
+Write-Host 'Enter these values only in the unified backend environment on Render.'

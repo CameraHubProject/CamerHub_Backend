@@ -1,6 +1,6 @@
 # CameraHub implementation status
 
-> Tài liệu tham khảo bản monolith trước khi tách. Mã nguồn và công cụ cũ đã được nén vào `.local/backups/legacy-before-cleanup-20261026.zip`. Lệnh chạy và kết quả kiểm thử hiện tại: [microservices](../microservices/README.md). Xác minh người bán đã được bỏ khỏi ứng dụng hiện tại.
+> Tài liệu tham khảo bản monolith trước khi tách. Mã nguồn và công cụ cũ đã được nén vào `.local/backups/legacy-before-cleanup-20261026.zip`. Lệnh chạy và kết quả kiểm thử hiện tại: [microservices](../README.md). Xác minh người bán đã được bỏ khỏi ứng dụng hiện tại.
 
 - Phase 0: implemented; project setup, unchanged V1 schema, guarded migration and infrastructure checks.
 - Repository layout: backend at `D:\CamerHub_Backend`, frontend at `D:\CameraHub_Frontend`; each keeps its original independent Git repository.

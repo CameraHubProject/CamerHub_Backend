@@ -39,6 +39,6 @@ Giới hạn: 6 lượt cho mỗi khóa hội thoại/phút, 3 câu đang xử l
 
 ## Kiểm tra
 
-Chạy `./mvnw.cmd --batch-mode --no-transfer-progress verify` từ thư mục backend; frontend dùng `npm test` và `npm run build`. Kiểm tra API, Docker và lưu hội thoại sau restart theo [hướng dẫn microservices](../microservices/README.md) và [báo cáo kiểm thử](MICROSERVICES_VERIFICATION.md).
+Chạy `./mvnw.cmd --batch-mode --no-transfer-progress verify` từ thư mục backend; frontend dùng `npm test` và `npm run build`. Kiểm tra API, Docker và lưu hội thoại sau restart theo [hướng dẫn microservices](../README.md) và [báo cáo kiểm thử](MICROSERVICES_VERIFICATION.md).
 
 Tài liệu chính thức: [Responses](https://developers.openai.com/api/docs/guides/responses), [Function calling](https://developers.openai.com/api/docs/guides/function-calling), [Web search/citations](https://developers.openai.com/api/docs/guides/tools-web-search), [GPT-5.4 mini](https://developers.openai.com/api/docs/models/gpt-5.4-mini).
