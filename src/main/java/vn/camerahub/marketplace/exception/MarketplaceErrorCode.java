@@ -21,6 +21,8 @@ public enum MarketplaceErrorCode implements ErrorCode {
     MODEL_NOT_FOUND(HttpStatus.BAD_REQUEST, "Vui lòng chọn model có trong danh mục."),
     BRAND_NOT_AVAILABLE(HttpStatus.BAD_REQUEST, "Hãng máy không có trong danh mục."),
     LISTING_NOT_FOUND(HttpStatus.NOT_FOUND, "Không tìm thấy tin đăng của bạn."),
+    LISTING_REASON_REQUIRED(HttpStatus.BAD_REQUEST, "Vui lòng nhập lý do, tối đa 2000 ký tự."),
+    LISTING_WITHDRAWAL_NOT_ALLOWED(HttpStatus.CONFLICT, "Tin đã được đặt mua hoặc đã bán, không thể ẩn hoặc xóa."),
     BRAND_EDIT_NOT_ALLOWED(HttpStatus.CONFLICT, "Không thể sửa hãng của tin đang duyệt, bị từ chối hoặc đã đặt mua/đã bán."),
     INSPECTED_BRAND_LOCKED(HttpStatus.CONFLICT, "Thiết bị đã có hồ sơ kiểm định. Vui lòng liên hệ hỗ trợ để điều chỉnh hãng máy."),
     INVALID_PRICE(HttpStatus.BAD_REQUEST, "Giá phải là số nguyên dương, tối đa 13 chữ số."),

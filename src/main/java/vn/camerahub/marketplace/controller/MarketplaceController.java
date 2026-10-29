@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 @lombok.RequiredArgsConstructor
 public class MarketplaceController {
     private final MarketplaceService service;
+    private final vn.camerahub.marketplace.service.ListingLifecycleService lifecycle;
 
     private UUID user(Principal principal) {
         return UUID.fromString(principal.getName());
@@ -72,6 +73,18 @@ public class MarketplaceController {
     @vn.camerahub.shared.dto.SuccessMessage("Đã cập nhật hãng máy của tin đăng.")
     public Object listingBrand(Principal p, @PathVariable UUID id, @Valid @RequestBody BrandSelection input) {
         return service.changeListingBrand(user(p), id, input);
+    }
+
+    @PostMapping("/api/marketplace/listings/{id}/hide")
+    @vn.camerahub.shared.dto.SuccessMessage("Đã ẩn tin đăng. Bạn có thể chỉnh sửa và gửi duyệt để đăng lại.")
+    public Object hide(Principal p, @PathVariable UUID id, @Valid @RequestBody ListingReason input) {
+        return lifecycle.withdraw(user(p), id, input, false);
+    }
+
+    @PostMapping("/api/marketplace/listings/{id}/delete")
+    @vn.camerahub.shared.dto.SuccessMessage("Đã xóa tin đăng khỏi kho thiết bị.")
+    public Object delete(Principal p, @PathVariable UUID id, @Valid @RequestBody ListingReason input) {
+        return lifecycle.withdraw(user(p), id, input, true);
     }
 
 }

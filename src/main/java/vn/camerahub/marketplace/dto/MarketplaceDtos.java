@@ -54,6 +54,11 @@ public final class MarketplaceDtos {
             @Size(max = 100, message = "Tên hãng máy không được vượt quá 100 ký tự.") String customBrandName) {
     }
 
+    public record ListingReason(
+            @NotBlank(message = "Vui lòng nhập lý do.")
+            @Size(max = 2000, message = "Lý do tối đa 2000 ký tự.") String reason) {
+    }
+
     public record Review(boolean approve, @NotBlank @Size(max = 2000) String note) {
     }
 

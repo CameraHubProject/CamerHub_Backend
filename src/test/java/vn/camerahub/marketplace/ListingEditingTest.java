@@ -43,6 +43,12 @@ class ListingEditingTest {
         assertThatThrownBy(()->service.saveDraft(other,id,input)).isInstanceOfSatisfying(AppException.class,e->assertThat(e.getStatusCode().value()).isEqualTo(403));
         verify(repository,never()).lockEditableDraft(any(),any());
     }
+    @Test void hiddenListingsStayHiddenWhenSavedAndReviewingOrRejectedListingsBecomeEditableDrafts() {
+        for (String status : List.of("HIDDEN","REJECTED","AI_REVIEW","PENDING_REVIEW")) {
+            when(repository.lockEditableDraft(id,owner)).thenReturn(List.of(Map.of("listing_status",status,"model_id",model,"inspection_badge","NOT_INSPECTED")));
+            assertThat(service.saveDraft(owner,id,input)).containsEntry("listingStatus","HIDDEN".equals(status) ? "HIDDEN" : "NEEDS_REVISION");
+        }
+    }
     @Test void missingListingIs404() {
         assertThatThrownBy(()->service.draft(owner,UUID.randomUUID())).isInstanceOfSatisfying(AppException.class,e->assertThat(e.getStatusCode().value()).isEqualTo(404));
     }
