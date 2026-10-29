@@ -54,6 +54,8 @@ public class ModerationService {
                         throw new IllegalArgumentException("Invalid listing");
                     boolean accepted = index(event.payload(), event.occurredAt());
                     if (accepted && "listing.submitted.v1".equals(event.eventType())) queue(event.payload());
+                    if (accepted && "listing.state.v1".equals(event.eventType()))
+                        repository.supersedeOldRevisions(event.aggregateId(), event.aggregateVersion());
                 }
                 case "listing.applied.v1" -> {
                     UUID decision = UUID.fromString(event.payload().path("decisionId").asText());

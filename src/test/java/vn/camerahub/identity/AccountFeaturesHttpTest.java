@@ -34,7 +34,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 
 @WebMvcTest(controllers={IdentityController.class, MarketplaceController.class})
 @org.springframework.test.context.ContextConfiguration(classes=AccountFeaturesHttpTest.Beans.class)
-@Import({IdentityController.class, MarketplaceController.class, vn.camerahub.shared.exception.GlobalExceptionHandler.class, vn.camerahub.shared.dto.ApiResponseAdvice.class, SecurityConfig.class, AccountService.class, AvatarService.class, MarketplaceService.class, ApiExceptionWriter.class, AccountFeaturesHttpTest.Beans.class})
+@Import({IdentityController.class, MarketplaceController.class, vn.camerahub.shared.exception.GlobalExceptionHandler.class, vn.camerahub.shared.dto.ApiResponseAdvice.class, SecurityConfig.class, AccountService.class, AvatarService.class, MarketplaceService.class, ListingLifecycleService.class, ApiExceptionWriter.class, AccountFeaturesHttpTest.Beans.class})
 class AccountFeaturesHttpTest {
     @Configuration static class Beans {
         @Bean Clock clock() { return Clock.systemUTC(); }
@@ -90,6 +90,30 @@ class AccountFeaturesHttpTest {
         mvc.perform(get("/api/marketplace/listings/"+UUID.randomUUID()+"/draft").header("Authorization","Bearer test")).andExpect(status().isNotFound());
         mvc.perform(post("/api/marketplace/listings/"+id+"/draft").header("Authorization","Bearer test").contentType("application/json").content("{}"))
             .andExpect(status().isBadRequest());
+    }
+    @Test void listingWithdrawalValidatesReasonAndBindsToSignedInOwner() throws Exception {
+        UUID id=UUID.randomUUID();
+        when(products.lockListingLifecycle(id,owner)).thenReturn(List.of(Map.of("listing_status","PUBLISHED")));
+        for(String action:List.of("hide","delete")) {
+            mvc.perform(post("/api/marketplace/listings/"+id+"/"+action).header("Authorization","Bearer test")
+                    .contentType("application/json").content("{\"reason\":\"   \"}"))
+                    .andExpect(status().isBadRequest());
+        }
+        verify(products,never()).withdrawListing(any(),any(),any(),any());
+        mvc.perform(post("/api/marketplace/listings/"+id+"/hide").header("Authorization","Bearer test")
+                .contentType("application/json").content("{\"reason\":\" Tạm ngừng bán \"}"))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.data.listingStatus").value("HIDDEN"));
+        verify(products).withdrawListing("Tạm ngừng bán",false,id,owner);
+    }
+    @Test void listingDeletionRequiresLoginAndCannotTargetAnotherOwnersListing() throws Exception {
+        UUID id=UUID.randomUUID();
+        mvc.perform(post("/api/marketplace/listings/"+id+"/delete").with(csrf())
+                .contentType("application/json").content("{\"reason\":\"Đăng nhầm\"}"))
+                .andExpect(status().isUnauthorized());
+        mvc.perform(post("/api/marketplace/listings/"+id+"/delete").header("Authorization","Bearer test")
+                .contentType("application/json").content("{\"reason\":\"Đăng nhầm\"}"))
+                .andExpect(status().isNotFound());
+        verify(products,never()).withdrawListing(any(),any(),any(),any());
     }
     @Test void avatarUploadReplacesOldBytesGeneratesKeyAndServesImmediately() throws Exception {
         account.setAvatarKey(UUID.randomUUID()); UUID old=account.getAvatarKey(); account.setAvatarContent(new byte[]{9});

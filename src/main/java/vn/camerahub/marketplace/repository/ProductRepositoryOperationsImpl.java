@@ -18,7 +18,7 @@ public class ProductRepositoryOperationsImpl implements ProductRepositoryOperati
     private static final String PRODUCT_SELECT = """
             SELECT p.id,p.title,b.name AS brand,m.model_name,m.device_type,p.price_vnd,p.shutter_count,
             p.condition_notes,p.inspection_badge,p.description,p.accessories,p.repair_history,p.listing_status,
-            p.presentation::text,m.specs::text,p.seller_id,seller.full_name AS seller_name,p.moderation_source,p.moderation_note,p.inspection_checks::text
+            p.presentation::text,m.specs::text,p.seller_id,seller.full_name AS seller_name,p.moderation_source,p.moderation_note,p.inspection_checks::text,p.withdrawal_reason
             FROM camerahub.products p JOIN camerahub.camera_models m ON m.id=p.model_id
             JOIN camerahub.brands b ON b.id=m.brand_id
             JOIN camerahub.public_accounts seller ON seller.id=p.seller_id
@@ -45,11 +45,11 @@ public class ProductRepositoryOperationsImpl implements ProductRepositoryOperati
     }
 
     public List<Map<String, Object>> findSellerListings(Object... args) {
-        return queries.query(PRODUCT_SELECT + " WHERE p.seller_id=? ORDER BY p.created_at DESC", rowMapper(true), args);
+        return queries.query(PRODUCT_SELECT + " WHERE p.seller_id=? AND p.deleted_at IS NULL ORDER BY p.created_at DESC", rowMapper(true), args);
     }
 
     public List<Map<String, Object>> findEditableDraft(Object... args) {
-        return queries.query(PRODUCT_SELECT + " WHERE p.id=? AND p.seller_id=? AND p.listing_status IN ('DRAFT','NEEDS_REVISION','PUBLISHED')", rowMapper(true), args);
+        return queries.query(PRODUCT_SELECT + " WHERE p.id=? AND p.seller_id=? AND p.deleted_at IS NULL AND p.listing_status NOT IN ('RESERVED','SOLD')", rowMapper(true), args);
     }
 
     public <T> T findModelId(Class<T> type, Object... args) {
@@ -65,7 +65,7 @@ public class ProductRepositoryOperationsImpl implements ProductRepositoryOperati
     }
 
     public List<Map<String, Object>> lockEditableDraft(Object... args) {
-        return queries.queryForList("SELECT listing_status,model_id,inspection_badge FROM camerahub.products WHERE id=? AND seller_id=? AND listing_status IN ('DRAFT','NEEDS_REVISION','PUBLISHED') FOR UPDATE", args);
+        return queries.queryForList("SELECT listing_status,model_id,inspection_badge FROM camerahub.products WHERE id=? AND seller_id=? AND deleted_at IS NULL AND listing_status NOT IN ('RESERVED','SOLD') FOR UPDATE", args);
     }
 
     public <T> T countInspectionChecks(Class<T> type, Object... args) {
@@ -75,7 +75,7 @@ public class ProductRepositoryOperationsImpl implements ProductRepositoryOperati
     public int saveDraft(Object... args) {
         return queries.update("""
                 UPDATE camerahub.products SET model_id=?,title=?,price_vnd=?,shutter_count=?,description=?,condition_notes=?,
-                accessories=?,serial_number_private=?,presentation=?::jsonb,updated_at=now(),version=version+1 WHERE id=?
+                accessories=?,serial_number_private=?,presentation=?::jsonb,updated_at=now(),version=version+1,submitted_revision=submitted_revision+1 WHERE id=?
                 """, args);
     }
 
@@ -131,7 +131,7 @@ public class ProductRepositoryOperationsImpl implements ProductRepositoryOperati
         return queries.queryForList("""
                 SELECT p.listing_status,p.inspection_badge,m.brand_id,m.device_type
                 FROM camerahub.products p JOIN camerahub.camera_models m ON m.id=p.model_id
-                WHERE p.id=? AND p.seller_id=? FOR UPDATE OF p
+                WHERE p.id=? AND p.seller_id=? AND p.deleted_at IS NULL FOR UPDATE OF p
                 """, args);
     }
 
@@ -150,9 +150,33 @@ public class ProductRepositoryOperationsImpl implements ProductRepositoryOperati
         return queries.update("UPDATE camerahub.products SET listing_status=? WHERE id=?", args);
     }
 
+    public List<Map<String, Object>> lockListingLifecycle(Object... args) {
+        return queries.queryForList("SELECT listing_status FROM camerahub.products WHERE id=? AND seller_id=? AND deleted_at IS NULL FOR UPDATE", args);
+    }
+
+    public <T> T hasListingCommitments(Class<T> type, Object... args) {
+        return queries.queryForObject("""
+                SELECT EXISTS (SELECT 1 FROM camerahub.orders WHERE product_id=? AND order_status<>'CANCELLED')
+                OR EXISTS (SELECT 1 FROM camerahub.product_reservations WHERE product_id=? AND state IN ('HELD','CONFIRMED'))
+                """, type, args);
+    }
+
+    public int withdrawListing(Object... args) {
+        return queries.update("""
+                UPDATE camerahub.products SET listing_status='HIDDEN',withdrawal_reason=?,
+                deleted_at=CASE WHEN ? THEN now() ELSE NULL END,updated_at=now(),version=version+1,
+                submitted_revision=submitted_revision+1 WHERE id=? AND seller_id=? AND deleted_at IS NULL
+                """, args);
+    }
+
+    public int recordListingAction(Object... args) {
+        return queries.update("INSERT INTO camerahub.product_status_history(product_id,old_status,new_status,actor_id,reason) VALUES (?,?,?,?,?)", args);
+    }
+
     private JpaRowMapper<Map<String, Object>> rowMapper(boolean moderated) {
         return (row, index) -> {
             var item = moderated ? mapper.moderatedProduct(row, index) : mapper.product(row, index);
+            if (moderated) item.put("withdrawalReason", row.getString("withdrawal_reason"));
             item.put("images", findImageUrls(String.class, row.getObject("id", UUID.class)));
             return item;
         };

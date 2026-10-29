@@ -12,7 +12,7 @@ public class DuplicateIndexRepositoryOperationsImpl implements DuplicateIndexRep
     private final JpaQueries queries;
 
     public <T> List<T> findListingIndex(Class<T> type, Object... args) {
-        return queries.queryForList("SELECT snapshot::text FROM camerahub.listing_index WHERE listing_id<>? AND listing_status NOT IN ('DRAFT','REJECTED','NEEDS_REVISION')", type, args);
+        return queries.queryForList("SELECT snapshot::text FROM camerahub.listing_index WHERE listing_id<>? AND listing_status NOT IN ('DRAFT','REJECTED','NEEDS_REVISION','HIDDEN')", type, args);
     }
 }
 

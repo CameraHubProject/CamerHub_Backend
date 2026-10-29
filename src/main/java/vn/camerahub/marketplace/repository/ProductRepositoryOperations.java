@@ -57,4 +57,12 @@ public interface ProductRepositoryOperations {
     int changeBrandAndRequeue(Object... args);
 
     int restoreDraftStatus(Object... args);
+
+    List<Map<String, Object>> lockListingLifecycle(Object... args);
+
+    <T> T hasListingCommitments(Class<T> type, Object... args);
+
+    int withdrawListing(Object... args);
+
+    int recordListingAction(Object... args);
 }

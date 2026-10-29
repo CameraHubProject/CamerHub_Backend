@@ -21,12 +21,15 @@ public class ProductMediaService {
     private final ProductMediaRepository repository;
     private final ProductMediaDataRepository contents;
     private final Path root;
+    private final ListingSubmission submissions;
 
     public ProductMediaService(ProductMediaRepository repository, ProductMediaDataRepository contents,
-                               @org.springframework.beans.factory.annotation.Value("${camerahub.media-root:storage/product-media}") String root) {
+                               @org.springframework.beans.factory.annotation.Value("${camerahub.media-root:storage/product-media}") String root,
+                               ListingSubmission submissions) {
         this.repository = repository;
         this.contents = contents;
         this.root = Path.of(root).toAbsolutePath().normalize();
+        this.submissions = submissions;
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -58,7 +61,7 @@ public class ProductMediaService {
         UUID media = UUID.randomUUID();
         repository.insertProductMedia(media, id, "product-public/" + media + ".png", id, fingerprint.sha256(), fingerprint.dhash(), fingerprint.signature());
         persist(media, output.toByteArray());
-        repository.markMediaEdited(id, user);
+        if (repository.markMediaEdited(id, user) > 0) submissions.stateChanged(id);
         return result(media);
     }
 
@@ -93,7 +96,7 @@ public class ProductMediaService {
     public void remove(Principal principal, UUID id, UUID media) {
         if (repository.findProducts2(id, UUID.fromString(principal.getName())).isEmpty()) throw new MediaException(MarketplaceErrorCode.MEDIA_DRAFT_NOT_FOUND);
         if (repository.deleteProductMedia(media, id) != 1) throw missing();
-        repository.markMediaEdited(id, UUID.fromString(principal.getName()));
+        if (repository.markMediaEdited(id, UUID.fromString(principal.getName())) > 0) submissions.stateChanged(id);
         // The database FK removes bytes atomically; original local files remain available for backup.
     }
 

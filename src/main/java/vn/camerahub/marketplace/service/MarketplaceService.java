@@ -79,11 +79,12 @@ public class MarketplaceService {
                 (!"NOT_INSPECTED".equals(rows.getFirst().get("inspection_badge")) || repository.countInspectionChecks(Integer.class, id) > 0))
             throw new ListingException(MarketplaceErrorCode.INSPECTED_MODEL_LOCKED);
         repository.saveDraft(model, input.title().strip(), money(input.priceVnd()), input.shutterCount(), input.description().strip(), input.conditionNotes().strip(), input.accessories(), input.serialNumber(), encode(Map.of("purposes", input.purposes())), id);
-        if ("PUBLISHED".equals(rows.getFirst().get("listing_status"))) {
-            repository.restoreDraftStatus("NEEDS_REVISION", id);
-            return Map.of("id", id, "listingStatus", "NEEDS_REVISION");
-        }
-        return Map.of("id", id, "listingStatus", rows.getFirst().get("listing_status"));
+        String old = (String) rows.getFirst().get("listing_status");
+        String status = Set.of("DRAFT", "HIDDEN").contains(old) ? old : "NEEDS_REVISION";
+        repository.restoreDraftStatus(status, id);
+        repository.recordListingAction(id, old, status, user, "Người bán chỉnh sửa tin đăng");
+        moderation.stateChanged(id);
+        return Map.of("id", id, "listingStatus", status);
     }
 
     private void requireOwner(UUID user, UUID id) {

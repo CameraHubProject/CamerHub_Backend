@@ -20,7 +20,7 @@ public class ListingRepositoryOperationsImpl implements ListingRepositoryOperati
     }
 
     public List<Map<String, Object>> lockSubmission(Object... args) {
-        return queries.queryForList("SELECT listing_status FROM camerahub.products WHERE id=? AND seller_id=? FOR UPDATE", args);
+        return queries.queryForList("SELECT listing_status FROM camerahub.products WHERE id=? AND seller_id=? AND deleted_at IS NULL FOR UPDATE", args);
     }
 
     public <T> T countImages(Class<T> type, Object... args) {
@@ -28,7 +28,7 @@ public class ListingRepositoryOperationsImpl implements ListingRepositoryOperati
     }
 
     public int markAiReview(Object... args) {
-        return queries.update("UPDATE camerahub.products SET listing_status='AI_REVIEW',updated_at=now(),version=version+1 WHERE id=?", args);
+        return queries.update("UPDATE camerahub.products SET listing_status='AI_REVIEW',withdrawal_reason=NULL,updated_at=now(),version=version+1 WHERE id=? AND deleted_at IS NULL", args);
     }
 
     public int insertProductStatusHistory(Object... args) {

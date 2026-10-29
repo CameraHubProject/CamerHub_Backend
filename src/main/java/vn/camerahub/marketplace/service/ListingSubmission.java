@@ -49,7 +49,7 @@ public class ListingSubmission {
         String old = (String) rows.getFirst().get("listing_status");
         if (Set.of("AI_REVIEW", "PENDING_REVIEW", "PUBLISHED").contains(old))
             return Map.of("id", id, "listingStatus", old);
-        if (!Set.of("DRAFT", "NEEDS_REVISION").contains(old))
+        if (!Set.of("DRAFT", "NEEDS_REVISION", "HIDDEN").contains(old))
             throw new ListingException(MarketplaceErrorCode.SUBMISSION_NOT_ALLOWED);
         if (repository.countImages(Integer.class, id) < 1)
             throw new ListingException(MarketplaceErrorCode.PHOTO_REQUIRED);

@@ -12,7 +12,7 @@ import static org.assertj.core.api.Assertions.*;
 class ListingMediaEditingTest {
     ProductMediaRepository repository=mock(ProductMediaRepository.class);
     ProductMediaDataRepository contents=mock(ProductMediaDataRepository.class);
-    ProductMediaService service=new ProductMediaService(repository,contents,"storage/product-media");
+    ProductMediaService service=new ProductMediaService(repository,contents,"storage/product-media",mock(vn.camerahub.marketplace.service.ListingSubmission.class));
     UUID id=UUID.randomUUID(), user=UUID.randomUUID(), media=UUID.randomUUID();
     java.security.Principal principal=()->user.toString();
     @Test void ownerCanRemovePublishedPhotoAndListingNeedsReview() {
