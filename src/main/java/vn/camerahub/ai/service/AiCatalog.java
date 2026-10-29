@@ -54,7 +54,7 @@ public class AiCatalog {
         String query = arguments.path("query").asText("");
         Long min = amount(arguments.get("min_price_vnd")), max = amount(arguments.get("max_price_vnd"));
         String type = arguments.path("device_type").asText(null);
-        if (query.length() > 160 || (type != null && !Set.of("BODY", "LENS", "OTHER").contains(type)) || (min != null && max != null && min > max))
+        if (query.length() > 160 || (type != null && !Set.of("BODY", "BODY_LENS", "LENS", "OTHER").contains(type)) || (min != null && max != null && min > max))
             return List.of(Map.of("error", "Bộ lọc tìm kiếm không hợp lệ."));
         return search(query, min, max, type);
     }

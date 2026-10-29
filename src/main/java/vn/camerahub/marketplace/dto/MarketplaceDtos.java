@@ -28,7 +28,7 @@ public final class MarketplaceDtos {
                           @NotBlank @Size(max = 4000) String conditionNotes,
                           @Size(max = 2000) String accessories, @Size(max = 200) String serialNumber,
                           @NotNull @Size(max = 4) List<@Pattern(regexp = "TRAVEL|VLOG|PRO|BEGINNER") String> purposes,
-                          UUID brandId, @Pattern(regexp = "BODY|LENS|OTHER") String deviceType,
+                          UUID brandId, @Pattern(regexp = "BODY|BODY_LENS|LENS|OTHER") String deviceType,
                           @Size(max = 100, message = "Tên hãng máy không được vượt quá 100 ký tự.") String brandName,
                           @Size(max = 100, message = "Tên hãng máy không được vượt quá 100 ký tự.") String customBrandName) {
         @AssertTrue(message = "Vui lòng chọn một hãng máy hoặc model; chỉ nhập tên tùy chỉnh khi chọn Khác.")

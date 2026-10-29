@@ -43,6 +43,8 @@ Xem [hướng dẫn Render](docs/DEPLOY_RENDER.md) để cập nhật service **
 
 Dữ liệu và ảnh sản phẩm được lưu bền trong Neon. Các file ảnh gốc tại `storage/product-media` được giữ để sao lưu; backend có thể nhập chúng vào database khi khởi động tại máy chứa file gốc. JWT và khóa dấu vân tay serial được giữ ổn định trong `.local/render/keys`. Không commit `.env`, `.local`, khóa JWT hoặc dữ liệu người dùng.
 
+Project Neon CameraHub chỉ dùng database `camerahub_mvp_dev` cho tất cả module và cho cả local/Render. Không tạo các database `camerahub_identity`, `camerahub_marketplace`, `camerahub_moderation`, `camerahub_commerce`, `camerahub_advisor` hoặc dùng lại `neondb`. Database hệ thống `postgres` do Neon quản lý được giữ nguyên. `.env` và `.local/render/unified-backend.env` phải trỏ đến cùng database chính.
+
 ## Kiểm tra
 
 ```powershell
@@ -51,3 +53,5 @@ Dữ liệu và ảnh sản phẩm được lưu bền trong Neon. Các file ả
 ```
 
 Script API tạo tài khoản thử, chỉ chạy trên database thử. `Test-UnifiedBackend.ps1` kiểm tra đăng bài, ảnh trùng, duyệt và checkout trên bản sao Neon; phần tạo Admin bị khóa theo tên database thử, không dùng cho production.
+
+Không chạy smoke test ghi dữ liệu vào database chính. Các cấu hình database thử cũ đã được lưu trong bản sao lưu khi dọn Neon. `Prepare-UnifiedTestDatabase.java` mặc định từ chối tạo database; tùy chọn `--allow-extra-database` chỉ dành cho project Neon thử nghiệm riêng, cần xóa database thử sau khi dùng. `mvnw.cmd verify` vẫn dùng được mà không tạo database Neon.

@@ -33,6 +33,8 @@ Build lại và Stop/Start sau khi sửa mã nguồn. API ở http://127.0.0.1:8
 
 ## Database và ảnh
 
+Database duy nhất của ứng dụng là `camerahub_mvp_dev`. Giữ `DB_URL` trên Render giống database trong `.env` và `.local/render/unified-backend.env`; tất cả module dùng chung datasource. Các database microservice, bản sao kiểm thử và `neondb` cũ đã được dọn sau khi sao lưu. Giữ database hệ thống `postgres` của Neon. Không nhập lại các file environment kiểm thử đã lưu trong thư mục backup.
+
 Flyway dùng riêng `camerahub.unified_schema_history`, giữ lịch sử migration cũ. Migration thêm bảng/cột phục vụ backend gộp và giữ ID, giá, trạng thái các đơn cũ. JPA chỉ `validate`, không tự xóa/tạo lại schema. Trước khi áp dụng lần đầu cần sao lưu và chạy thử trên bản sao database.
 
 Ảnh mới được chuẩn hóa PNG rồi lưu ở `product_media_data.content` trong Neon, kèm metadata và dấu vân tay chống trùng. `LegacyPhotoImporter` tự nhập ảnh cũ từ `storage/product-media` nếu có file phù hợp, không xóa bản gốc. Cần chạy một lần tại máy có ảnh cũ trước khi Render phục vụ ảnh đó. Render không cần ổ đĩa trả phí.
