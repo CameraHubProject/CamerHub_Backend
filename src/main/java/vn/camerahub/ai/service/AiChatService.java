@@ -191,7 +191,7 @@ public class AiChatService {
         properties.put("max_price_vnd", Map.of("type", List.of("integer", "null"), "minimum", 0, "maximum", 9999999999999L));
         var device = new LinkedHashMap<String, Object>();
         device.put("type", List.of("string", "null"));
-        device.put("enum", Arrays.asList("BODY", "LENS", "OTHER", null));
+        device.put("enum", Arrays.asList("BODY", "BODY_LENS", "LENS", "OTHER", null));
         properties.put("device_type", device);
         tools.add(Map.of("type", "function", "name", "search_camerahub_products", "description", "Tìm tối đa 8 tin đang bán thực tế tại CameraHub theo tên/model, loại và giá. Dữ liệu chỉ đọc, mới nhất.", "strict", true,
                 "parameters", Map.of("type", "object", "properties", properties, "required", List.of("query", "min_price_vnd", "max_price_vnd", "device_type"), "additionalProperties", false)));

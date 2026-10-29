@@ -25,6 +25,18 @@ class ListingEditingTest {
         verify(repository).saveDraft(model,"Title",100000L,null,"Description","Condition","Accessories","Serial","{\"purposes\":[]}",id);
         verify(repository).restoreDraftStatus("NEEDS_REVISION",id);
     }
+    @Test void authorCanChangeBodyToBodyAndLensKit() {
+        UUID brand=UUID.randomUUID(), kitModel=UUID.randomUUID();
+        var kit=new Listing(null,"Title","100000",null,"Description","Condition",null,null,List.of(),brand,"BODY_LENS");
+        try(var validators=jakarta.validation.Validation.buildDefaultValidatorFactory()) {
+            assertThat(validators.getValidator().validate(kit)).isEmpty();
+        }
+        when(repository.countBrand(Integer.class,brand)).thenReturn(1);
+        when(repository.countInspectionChecks(Integer.class,id)).thenReturn(0);
+        when(repository.upsertUnspecifiedModel(UUID.class,brand,"BODY_LENS")).thenReturn(kitModel);
+        service.saveDraft(owner,id,kit);
+        verify(repository).saveDraft(kitModel,"Title",100000L,null,"Description","Condition",null,null,"{\"purposes\":[]}",id);
+    }
     @Test void otherAuthorIsForbiddenEvenWhenTheyKnowId() {
         UUID other=UUID.randomUUID();
         assertThatThrownBy(()->service.draft(other,id)).isInstanceOfSatisfying(AppException.class,e->assertThat(e.getStatusCode().value()).isEqualTo(403));

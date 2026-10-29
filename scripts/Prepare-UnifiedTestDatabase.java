@@ -34,6 +34,9 @@ class PrepareUnifiedTestDatabase {
         Collections.sort(lines);var hash=MessageDigest.getInstance("SHA-256");for(String line:lines)hash.update(line.getBytes(java.nio.charset.StandardCharsets.UTF_8));return HexFormat.of().formatHex(hash.digest());
     }
     public static void main(String[] args)throws Exception {
+        if (args.length != 1 || !"--allow-extra-database".equals(args[0])) {
+            throw new IllegalArgumentException("CameraHub uses one Neon database. This optional integration helper creates an extra database; run it only on a separate test project with --allow-extra-database, then remove that database after testing.");
+        }
         Class.forName("org.postgresql.Driver");var config=InspectUnifiedDatabase.config();String original=config.getProperty("DB_URL");
         String name="camerahub_unified_verify_"+UUID.randomUUID().toString().replace("-","").substring(0,12);
         Path directory=Path.of(".local/unified");Files.createDirectories(directory);
