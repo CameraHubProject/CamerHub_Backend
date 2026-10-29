@@ -35,6 +35,18 @@ public class Account {
     @Column(name = "profile_version", nullable = false)
     private Long profileVersion;
 
+    @Column(name = "avatar_key")
+    private UUID avatarKey;
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    @Column(name = "avatar_content", columnDefinition = "bytea")
+    private byte[] avatarContent;
+    @Column(name = "avatar_type")
+    private String avatarType;
+
+    public String getAvatarUrl() {
+        return avatarKey == null ? null : "/api/auth/me/avatar?key=" + avatarKey;
+    }
+
     @Transient
     private List<String> roles = List.of();
 

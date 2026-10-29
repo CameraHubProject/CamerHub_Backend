@@ -10,6 +10,16 @@ public final class IdentityDtos {
 
     public record Profile(@NotBlank @Size(max = 160) String fullName,
                           @NotBlank @Pattern(regexp = "[+0-9 ().-]{1,20}") String phone) {
+        @com.fasterxml.jackson.annotation.JsonAnySetter
+        public void rejectField(String name, Object value) {
+            throw new vn.camerahub.shared.exception.ValidationException(Map.of(name, "Không được sửa trường này."));
+        }
+    }
+
+    public record PasswordChange(@NotBlank @Size(max = 72) String currentPassword,
+                                 @NotBlank @Size(min = 12, max = 72) String newPassword,
+                                 @NotBlank @Size(max = 72) String confirmPassword) {
+        @Override public String toString() { return "PasswordChange[REDACTED]"; }
     }
 
     public record Csrf(String headerName, String token) {

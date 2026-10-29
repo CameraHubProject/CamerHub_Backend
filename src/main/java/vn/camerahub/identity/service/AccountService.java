@@ -88,6 +88,7 @@ public class AccountService implements UserDetailsService {
 
     @Transactional
     public Account update(UUID id, String fullName, String phone) {
+        if (fullName == null || fullName.isBlank() || fullName.length() > 160) throw new ValidationException(Map.of("fullName", "Họ tên không hợp lệ."));
         String canonical = PhoneNumber.normalize(phone);
         if (canonical == null)
             throw new AccountException(IdentityErrorCode.INVALID_PHONE);
@@ -105,6 +106,22 @@ public class AccountService implements UserDetailsService {
         changed(account);
         account.setRoles(roles.findActiveRoles(id));
         return account;
+    }
+
+    @Transactional
+    public void changePassword(UUID id, vn.camerahub.identity.dto.IdentityDtos.PasswordChange input) {
+        var account = repository.lockById(id).orElseThrow(() -> new AccountException(IdentityErrorCode.USER_NOT_FOUND));
+        if (!passwords.matches(input.currentPassword(), account.getPasswordHash()))
+            throw new ValidationException(Map.of("currentPassword", "Mật khẩu hiện tại không đúng."));
+        if (!input.newPassword().equals(input.confirmPassword()))
+            throw new ValidationException(Map.of("confirmPassword", "Xác nhận mật khẩu không khớp."));
+        if (input.newPassword().length() < 12 || input.newPassword().getBytes(StandardCharsets.UTF_8).length > 72)
+            throw new ValidationException(Map.of("newPassword", "Mật khẩu cần ít nhất 12 ký tự và tối đa 72 byte UTF-8."));
+        if (passwords.matches(input.newPassword(), account.getPasswordHash()))
+            throw new ValidationException(Map.of("newPassword", "Mật khẩu mới phải khác mật khẩu hiện tại."));
+        account.setPasswordHash(passwords.encode(input.newPassword()));
+        account.setUpdatedAt(clock.instant());
+        saveAccount(account);
     }
 
     public PublicAccountResponse publicData(UUID id) {

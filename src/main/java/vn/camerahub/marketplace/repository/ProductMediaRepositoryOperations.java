@@ -21,4 +21,6 @@ public interface ProductMediaRepositoryOperations {
     List<Map<String, Object>> findProducts2(Object... args);
 
     int deleteProductMedia(Object... args);
+
+    int markMediaEdited(Object... args);
 }

@@ -12,7 +12,7 @@ public class ProductMediaRepositoryOperationsImpl implements ProductMediaReposit
     private final JpaQueries queries;
 
     public List<Map<String, Object>> findProducts(Object... args) {
-        return queries.queryForList("SELECT id FROM camerahub.products WHERE id=? AND seller_id=? AND listing_status IN ('DRAFT','NEEDS_REVISION') FOR UPDATE", args);
+        return queries.queryForList("SELECT id FROM camerahub.products WHERE id=? AND seller_id=? AND listing_status IN ('DRAFT','NEEDS_REVISION','PUBLISHED') FOR UPDATE", args);
     }
 
     public <T> List<T> findProductMedia(Class<T> type, Object... args) {
@@ -40,7 +40,11 @@ public class ProductMediaRepositoryOperationsImpl implements ProductMediaReposit
     }
 
     public List<Map<String, Object>> findProducts2(Object... args) {
-        return queries.queryForList("SELECT id FROM camerahub.products WHERE id=? AND seller_id=? AND listing_status IN ('DRAFT','NEEDS_REVISION') FOR UPDATE", args);
+        return queries.queryForList("SELECT id FROM camerahub.products WHERE id=? AND seller_id=? AND listing_status IN ('DRAFT','NEEDS_REVISION','PUBLISHED') FOR UPDATE", args);
+    }
+
+    public int markMediaEdited(Object... args) {
+        return queries.update("UPDATE camerahub.products SET listing_status='NEEDS_REVISION',updated_at=now(),version=version+1 WHERE id=? AND seller_id=? AND listing_status='PUBLISHED'", args);
     }
 
     public int deleteProductMedia(Object... args) {
