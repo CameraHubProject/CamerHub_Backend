@@ -59,6 +59,7 @@ public class MarketplaceService {
     }
 
     public Map<String, Object> draft(UUID user, UUID id) {
+        requireOwner(user, id);
         var rows = repository.findEditableDraft(id, user);
         if (rows.isEmpty()) throw new ListingException(MarketplaceErrorCode.EDITABLE_DRAFT_NOT_FOUND);
         var item = rows.getFirst();
@@ -70,6 +71,7 @@ public class MarketplaceService {
 
     @Transactional
     public Map<String, Object> saveDraft(UUID user, UUID id, MarketplaceDtos.Listing input) {
+        requireOwner(user, id);
         var rows = repository.lockEditableDraft(id, user);
         if (rows.isEmpty()) throw new ListingException(MarketplaceErrorCode.LISTING_NOT_EDITABLE);
         UUID model = resolveListingModel(input);
@@ -77,7 +79,16 @@ public class MarketplaceService {
                 (!"NOT_INSPECTED".equals(rows.getFirst().get("inspection_badge")) || repository.countInspectionChecks(Integer.class, id) > 0))
             throw new ListingException(MarketplaceErrorCode.INSPECTED_MODEL_LOCKED);
         repository.saveDraft(model, input.title().strip(), money(input.priceVnd()), input.shutterCount(), input.description().strip(), input.conditionNotes().strip(), input.accessories(), input.serialNumber(), encode(Map.of("purposes", input.purposes())), id);
+        if ("PUBLISHED".equals(rows.getFirst().get("listing_status"))) {
+            repository.restoreDraftStatus("NEEDS_REVISION", id);
+            return Map.of("id", id, "listingStatus", "NEEDS_REVISION");
+        }
         return Map.of("id", id, "listingStatus", rows.getFirst().get("listing_status"));
+    }
+
+    private void requireOwner(UUID user, UUID id) {
+        var item = repository.findById(id).orElseThrow(() -> new vn.camerahub.shared.exception.AppException(vn.camerahub.shared.exception.CommonErrorCode.RESOURCE_NOT_FOUND));
+        if (!user.equals(item.getSellerId())) throw new vn.camerahub.shared.exception.AppException(vn.camerahub.shared.exception.CommonErrorCode.ACCESS_DENIED);
     }
 
     public List<Map<String, Object>> publicSellerProducts(UUID seller, String status, int limit, int offset) {

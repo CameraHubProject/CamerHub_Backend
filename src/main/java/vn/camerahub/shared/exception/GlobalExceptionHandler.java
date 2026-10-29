@@ -51,7 +51,8 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(MaxUploadSizeExceededException.class)
-    public ResponseEntity<?> size() {
+    public ResponseEntity<?> size(jakarta.servlet.http.HttpServletRequest request) {
+        if ("/api/auth/me/avatar".equals(request.getRequestURI())) return business(new ValidationException(Map.of("file", "Ảnh tối đa 2 MB.")));
         return failure(CommonErrorCode.UPLOAD_TOO_LARGE, Map.of());
     }
 
@@ -65,7 +66,7 @@ public class GlobalExceptionHandler {
         return failure(CommonErrorCode.AUTHENTICATION_REQUIRED, Map.of());
     }
 
-    @ExceptionHandler({org.springframework.web.servlet.resource.NoResourceFoundException.class, org.springframework.web.servlet.NoHandlerFoundException.class, org.springframework.web.HttpRequestMethodNotSupportedException.class, org.springframework.web.HttpMediaTypeNotSupportedException.class, MissingServletRequestParameterException.class})
+    @ExceptionHandler({org.springframework.web.servlet.resource.NoResourceFoundException.class, org.springframework.web.servlet.NoHandlerFoundException.class, org.springframework.web.HttpRequestMethodNotSupportedException.class, org.springframework.web.HttpMediaTypeNotSupportedException.class, MissingServletRequestParameterException.class, org.springframework.web.multipart.support.MissingServletRequestPartException.class})
     public ResponseEntity<?> requestError(Exception e) {
         int code = ((org.springframework.web.ErrorResponse) e).getStatusCode().value();
         String message = switch (code) {

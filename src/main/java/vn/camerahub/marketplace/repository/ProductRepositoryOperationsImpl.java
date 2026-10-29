@@ -49,7 +49,7 @@ public class ProductRepositoryOperationsImpl implements ProductRepositoryOperati
     }
 
     public List<Map<String, Object>> findEditableDraft(Object... args) {
-        return queries.query(PRODUCT_SELECT + " WHERE p.id=? AND p.seller_id=? AND p.listing_status IN ('DRAFT','NEEDS_REVISION')", rowMapper(true), args);
+        return queries.query(PRODUCT_SELECT + " WHERE p.id=? AND p.seller_id=? AND p.listing_status IN ('DRAFT','NEEDS_REVISION','PUBLISHED')", rowMapper(true), args);
     }
 
     public <T> T findModelId(Class<T> type, Object... args) {
@@ -65,7 +65,7 @@ public class ProductRepositoryOperationsImpl implements ProductRepositoryOperati
     }
 
     public List<Map<String, Object>> lockEditableDraft(Object... args) {
-        return queries.queryForList("SELECT listing_status,model_id,inspection_badge FROM camerahub.products WHERE id=? AND seller_id=? AND listing_status IN ('DRAFT','NEEDS_REVISION') FOR UPDATE", args);
+        return queries.queryForList("SELECT listing_status,model_id,inspection_badge FROM camerahub.products WHERE id=? AND seller_id=? AND listing_status IN ('DRAFT','NEEDS_REVISION','PUBLISHED') FOR UPDATE", args);
     }
 
     public <T> T countInspectionChecks(Class<T> type, Object... args) {

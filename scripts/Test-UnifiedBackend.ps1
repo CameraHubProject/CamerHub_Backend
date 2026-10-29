@@ -79,7 +79,7 @@ Call-Platform $platformOther.Session "/api/marketplace/listings/$($platformDupli
 $platformRejected = Wait-Listing $platformOther.Session $platformDuplicate.id @('REJECTED')
 Assert-Platform ($platformRejected.moderationNote -match 'Ảnh') 'Duplicate photo across sellers is rejected'
 $platformPrivate = Invoke-WebRequest "$BaseUrl/api/marketplace/listings/$($platformDuplicate.id)/draft" -WebSession $platformBuyer.Session -SkipHttpErrorCheck
-Assert-Platform ($platformPrivate.StatusCode -in @(404, 409)) 'Other buyer cannot read private draft'
+Assert-Platform ($platformPrivate.StatusCode -in @(403, 404, 409)) 'Other buyer cannot read private draft'
 $platformCheckout = @{requestId = [Guid]::NewGuid().ToString(); productIds = @($platformDraft.id); delivery = 'DELIVERY'; address = @{recipientName = 'Smoke buyer'; phone = $platformBuyer.Phone; province = 'Hà Nội'; streetAddress = 'Địa chỉ kiểm thử'; isDefault = $false } }
 $platformOrders = @(Call-Platform $platformBuyer.Session '/api/marketplace/checkout' $platformCheckout 'POST'); $platformAgain = @(Call-Platform $platformBuyer.Session '/api/marketplace/checkout' $platformCheckout 'POST')
 Assert-Platform ($platformOrders.Count -eq 1 -and $platformOrders[0].id -eq $platformAgain[0].id) 'Checkout retry is idempotent with one database'

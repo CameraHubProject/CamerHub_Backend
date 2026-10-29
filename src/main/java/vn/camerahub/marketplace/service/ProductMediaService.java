@@ -58,6 +58,7 @@ public class ProductMediaService {
         UUID media = UUID.randomUUID();
         repository.insertProductMedia(media, id, "product-public/" + media + ".png", id, fingerprint.sha256(), fingerprint.dhash(), fingerprint.signature());
         persist(media, output.toByteArray());
+        repository.markMediaEdited(id, user);
         return result(media);
     }
 
@@ -92,6 +93,7 @@ public class ProductMediaService {
     public void remove(Principal principal, UUID id, UUID media) {
         if (repository.findProducts2(id, UUID.fromString(principal.getName())).isEmpty()) throw new MediaException(MarketplaceErrorCode.MEDIA_DRAFT_NOT_FOUND);
         if (repository.deleteProductMedia(media, id) != 1) throw missing();
+        repository.markMediaEdited(id, UUID.fromString(principal.getName()));
         // The database FK removes bytes atomically; original local files remain available for backup.
     }
 

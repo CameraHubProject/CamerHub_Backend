@@ -26,6 +26,7 @@ public class IdentityController {
     private final AccountService accounts;
     private final ProfileMapper mapper;
     private final AuthTokenService tokens;
+    private final AvatarService avatars;
 
     @GetMapping("/csrf")
     @Operation(summary = "Lấy CSRF token cho trình duyệt")
@@ -54,6 +55,29 @@ public class IdentityController {
     @Operation(summary = "Cập nhật tên và số điện thoại")
     public ApiResponse<ProfileResponse> update(Principal principal, @Valid @RequestBody Profile request) {
         return ApiResponse.success(200, "Cập nhật tài khoản thành công.", mapper.toResponse(accounts.update(UUID.fromString(principal.getName()), request.fullName(), request.phone())));
+    }
+
+    @PostMapping("/me/password")
+    public ApiResponse<Void> changePassword(Principal principal, @Valid @RequestBody PasswordChange request) {
+        accounts.changePassword(UUID.fromString(principal.getName()), request);
+        return ApiResponse.success(200, "Đổi mật khẩu thành công.", null);
+    }
+
+    @PostMapping(value = "/me/avatar", consumes = "multipart/form-data")
+    public ApiResponse<ProfileResponse> avatar(Principal principal, @RequestParam("file") org.springframework.web.multipart.MultipartFile file) throws java.io.IOException {
+        UUID id = UUID.fromString(principal.getName());
+        avatars.upload(id, file);
+        return ApiResponse.success(200, "Đổi ảnh đại diện thành công.", mapper.toResponse(accounts.get(id)));
+    }
+
+    @GetMapping("/me/avatar")
+    public org.springframework.http.ResponseEntity<byte[]> avatar(Principal principal, @RequestParam UUID key) {
+        var account = accounts.get(UUID.fromString(principal.getName()));
+        if (!key.equals(account.getAvatarKey()) || account.getAvatarContent() == null)
+            throw new vn.camerahub.shared.exception.AppException(vn.camerahub.shared.exception.CommonErrorCode.RESOURCE_NOT_FOUND);
+        return org.springframework.http.ResponseEntity.ok().cacheControl(org.springframework.http.CacheControl.noStore())
+            .header("X-Content-Type-Options", "nosniff")
+            .contentType(org.springframework.http.MediaType.parseMediaType(account.getAvatarType())).body(account.getAvatarContent());
     }
 
     @PostMapping("/refresh")
